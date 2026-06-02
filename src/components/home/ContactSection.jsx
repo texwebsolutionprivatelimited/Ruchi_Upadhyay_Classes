@@ -9,22 +9,22 @@ const contactInfo = [
   {
     icon: MapPin,
     title: 'Address',
-    content: '123 Chemistry Lane, Education City, India - 110001',
+    content: 'Bhopal, MP - 462022',
   },
   {
     icon: Phone,
     title: 'Phone',
-    content: '+91 98765 43210',
+    content: '+91 72258 14452',
   },
   {
     icon: Mail,
     title: 'Email',
-    content: 'contact@ruchichemistry.com',
+    content: 'info@ruchiupadhyay.in',
   },
   {
     icon: Clock,
     title: 'Timings',
-    content: 'Mon - Sat: 9:00 AM - 8:00 PM',
+    content: 'Mon - Sat: 5:00 PM - 10:00 PM',
   },
 ];
 const ContactSection = () => {
@@ -109,7 +109,7 @@ const ContactSection = () => {
                   <label className="block text-sm font-medium text-card-foreground mb-2">
                     Phone
                   </label>
-                  <Input type="tel" placeholder="+91 98765 43210" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} required />
+                  <Input type="tel" placeholder="+91 72258 14452" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} required />
                 </div>
               </div>
 

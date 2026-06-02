@@ -29,7 +29,7 @@ const faqs = [
   },
   {
     question: 'How can I contact support?',
-    answer: 'You can reach our support team through the Contact page, email us at contact@ruchichemistry.com, or call us at +91 98765 43210. We typically respond within 24 hours.',
+    answer: 'You can reach our support team through the Contact page, email us at info@ruchiupadhyay.in, or call us at +91 72258 14452. We typically respond within 24 hours.',
   },
   {
     question: 'Are the courses self-paced?',

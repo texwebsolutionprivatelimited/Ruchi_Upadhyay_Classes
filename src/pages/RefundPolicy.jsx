@@ -31,7 +31,7 @@ const RefundPolicy = () => {
                     <section>
                         <h2 className="text-xl md:text-2xl font-semibold text-foreground mb-4">3. Refund Process</h2>
                         <p>
-                            To request a refund, please contact our support team at <a href="mailto:info@ruchiupadhyay.com" className="text-primary hover:underline">info@ruchiupadhyay.com</a> with your order details and the reason for the request.
+                            To request a refund, please contact our support team at <a href="mailto:info@ruchiupadhyay.in" className="text-primary hover:underline">info@ruchiupadhyay.in</a> with your order details and the reason for the request.
                         </p>
                         <p className="mt-2">
                             Once your return is received and inspected, we will send you an email to notify you that we have received your request. We will also notify you of the approval or rejection of your refund.
@@ -48,7 +48,7 @@ const RefundPolicy = () => {
                     <section>
                         <h2 className="text-xl md:text-2xl font-semibold text-foreground mb-4">5. Contact Us</h2>
                         <p>
-                            For any questions regarding refunds and returns, please contact us at: <a href="mailto:info@ruchiupadhyay.com" className="text-primary hover:underline">info@ruchiupadhyay.com</a>.
+                            For any questions regarding refunds and returns, please contact us at: <a href="mailto:info@ruchiupadhyay.in" className="text-primary hover:underline">info@ruchiupadhyay.in</a>.
                         </p>
                     </section>
                 </div>

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Mail, Phone, MapPin, Twitter, Facebook, Instagram, Linkedin, Youtube, ArrowRight, Heart } from 'lucide-react';
+import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin, Youtube, ArrowRight, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ruchiLogo from '@/assets/ruchi-logo.png';
 
@@ -23,9 +23,23 @@ const Footer = () => {
           </p>
 
           <div className="flex gap-4">
-            {[Twitter, Facebook, Instagram, Linkedin, Youtube].map((Icon, i) => (<motion.a key={i} href="#" whileHover={{ y: -5, scale: 1.1 }} className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-primary hover:border-primary transition-all duration-300 backdrop-blur-sm group">
-              <Icon className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" />
-            </motion.a>))}
+            {[
+              { Icon: Instagram, href: 'https://www.instagram.com/ruchi_u305/' },
+              { Icon: Linkedin, href: 'https://www.linkedin.com/in/ruchi-upadhyay-7600109b/' },
+              { Icon: Youtube, href: 'https://www.youtube.com/@ruchiupadhyay3687' },
+              { Icon: Facebook, href: 'https://www.facebook.com/RuchiUpadhyayEducator/' },
+            ].map(({ Icon, href }, i) => (
+              <motion.a 
+                key={i} 
+                href={href} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                whileHover={{ y: -5, scale: 1.1 }} 
+                className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-primary hover:border-primary transition-all duration-300 backdrop-blur-sm group"
+              >
+                <Icon className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" />
+              </motion.a>
+            ))}
           </div>
         </div>
 
@@ -94,8 +108,8 @@ const Footer = () => {
               </div>
               <div className="space-y-1 text-left">
                 <p className="text-sm font-bold text-white italic">Mail Us</p>
-                <a href="mailto:info@ruchiupadhyay.com" className="text-gray-400 text-sm hover:text-primary transition-colors">
-                  info@ruchiupadhyay.com
+                <a href="mailto:info@ruchiupadhyay.in" className="text-gray-400 text-sm hover:text-primary transition-colors">
+                  info@ruchiupadhyay.in
                 </a>
               </div>
             </div>
@@ -123,7 +137,7 @@ const Footer = () => {
         </p>
 
         {/* Center: Made By */}
-        <motion.a href="https://www.instagram.com/internshipcatalyst/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors order-1 lg:order-2 group" whileHover={{ scale: 1.05 }}>
+        <motion.a href="https://internshipcatalyst.in" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors order-1 lg:order-2 group" whileHover={{ scale: 1.05 }}>
           <span>Made by</span>
           <motion.span animate={{
             scale: [1, 1.2, 1],
