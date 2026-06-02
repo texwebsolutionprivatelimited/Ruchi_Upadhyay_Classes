@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://ruchiupadhyayclasses.com/sitemap.xml
+Sitemap: https://ruchiupadhyayclasses.in/sitemap.xml

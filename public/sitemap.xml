@@ -6,7 +6,7 @@
 
   <!-- Home -->
   <url>
-    <loc>https://ruchiupadhyayclasses.com/</loc>
+    <loc>https://ruchiupadhyayclasses.in/</loc>
     <lastmod>2025-06-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
@@ -14,7 +14,7 @@
 
   <!-- About -->
   <url>
-    <loc>https://ruchiupadhyayclasses.com/about</loc>
+    <loc>https://ruchiupadhyayclasses.in/about</loc>
     <lastmod>2025-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
@@ -22,7 +22,7 @@
 
   <!-- Courses -->
   <url>
-    <loc>https://ruchiupadhyayclasses.com/courses</loc>
+    <loc>https://ruchiupadhyayclasses.in/courses</loc>
     <lastmod>2025-06-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
@@ -30,37 +30,37 @@
 
   <!-- Course Categories -->
   <url>
-    <loc>https://ruchiupadhyayclasses.com/courses/class-10</loc>
+    <loc>https://ruchiupadhyayclasses.in/courses/class-10</loc>
     <lastmod>2025-06-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://ruchiupadhyayclasses.com/courses/class-12</loc>
+    <loc>https://ruchiupadhyayclasses.in/courses/class-12</loc>
     <lastmod>2025-06-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://ruchiupadhyayclasses.com/courses/iit-jee</loc>
+    <loc>https://ruchiupadhyayclasses.in/courses/iit-jee</loc>
     <lastmod>2025-06-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://ruchiupadhyayclasses.com/courses/neet</loc>
+    <loc>https://ruchiupadhyayclasses.in/courses/neet</loc>
     <lastmod>2025-06-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://ruchiupadhyayclasses.com/courses/engineering</loc>
+    <loc>https://ruchiupadhyayclasses.in/courses/engineering</loc>
     <lastmod>2025-06-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ruchiupadhyayclasses.com/courses/environmental</loc>
+    <loc>https://ruchiupadhyayclasses.in/courses/environmental</loc>
     <lastmod>2025-06-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -68,7 +68,7 @@
 
   <!-- YouTube Classes -->
   <url>
-    <loc>https://ruchiupadhyayclasses.com/Ytclass</loc>
+    <loc>https://ruchiupadhyayclasses.in/Ytclass</loc>
     <lastmod>2025-06-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -76,7 +76,7 @@
 
   <!-- Notes -->
   <url>
-    <loc>https://ruchiupadhyayclasses.com/notes</loc>
+    <loc>https://ruchiupadhyayclasses.in/notes</loc>
     <lastmod>2025-06-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -84,7 +84,7 @@
 
   <!-- Tests -->
   <url>
-    <loc>https://ruchiupadhyayclasses.com/tests</loc>
+    <loc>https://ruchiupadhyayclasses.in/tests</loc>
     <lastmod>2025-06-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -92,7 +92,7 @@
 
   <!-- Leaderboard -->
   <url>
-    <loc>https://ruchiupadhyayclasses.com/leaderboard</loc>
+    <loc>https://ruchiupadhyayclasses.in/leaderboard</loc>
     <lastmod>2025-06-03</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -100,7 +100,7 @@
 
   <!-- Contact -->
   <url>
-    <loc>https://ruchiupadhyayclasses.com/contact</loc>
+    <loc>https://ruchiupadhyayclasses.in/contact</loc>
     <lastmod>2025-06-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -108,7 +108,7 @@
 
   <!-- Login -->
   <url>
-    <loc>https://ruchiupadhyayclasses.com/login</loc>
+    <loc>https://ruchiupadhyayclasses.in/login</loc>
     <lastmod>2025-06-03</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
@@ -116,19 +116,19 @@
 
   <!-- Legal Pages -->
   <url>
-    <loc>https://ruchiupadhyayclasses.com/privacy-policy</loc>
+    <loc>https://ruchiupadhyayclasses.in/privacy-policy</loc>
     <lastmod>2025-06-03</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://ruchiupadhyayclasses.com/terms-of-service</loc>
+    <loc>https://ruchiupadhyayclasses.in/terms-of-service</loc>
     <lastmod>2025-06-03</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://ruchiupadhyayclasses.com/refund-policy</loc>
+    <loc>https://ruchiupadhyayclasses.in/refund-policy</loc>
     <lastmod>2025-06-03</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
