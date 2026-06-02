@@ -33,7 +33,7 @@ const expertiseList = [
   },
   {
     icon: FlaskConical,
-    title: 'Materials Science',
+    title: 'Materials  Science',
     description: 'Development of novel materials with enhanced properties for various industrial uses.'
   },
   {
