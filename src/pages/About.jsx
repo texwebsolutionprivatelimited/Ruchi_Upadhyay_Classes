@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
-import { 
-  GraduationCap, Award, Users, BookOpen, Star, Calendar, 
-  Trophy, Target, Heart, CheckCircle, Quote, MapPin, 
+import {
+  GraduationCap, Award, Users, BookOpen, Star, Calendar,
+  Trophy, Target, Heart, CheckCircle, Quote, MapPin,
   Lightbulb, Beaker, Atom, FlaskConical, Microscope
 } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
@@ -115,9 +115,9 @@ const About = () => {
           <div className="container mx-auto px-4">
             <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
               {/* Text Content */}
-              <motion.div 
-                initial={{ opacity: 0, x: -30 }} 
-                animate={{ opacity: 1, x: 0 }} 
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
                 className="text-center lg:text-left order-2 lg:order-1"
               >
                 <div className="inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-primary/10 text-primary mb-4 md:mb-6 text-sm md:text-base">
@@ -146,9 +146,9 @@ const About = () => {
               </motion.div>
 
               {/* Profile Image */}
-              <motion.div 
-                initial={{ opacity: 0, x: 30 }} 
-                animate={{ opacity: 1, x: 0 }} 
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
                 className="flex justify-center order-1 lg:order-2"
               >
                 <div className="relative">
@@ -156,9 +156,9 @@ const About = () => {
                     <img src={ruchiProfile} alt="Dr. Ruchi Upadhyay" className="w-full h-full rounded-full object-cover" />
                   </div>
                   {/* Floating badges */}
-                  <motion.div 
-                    animate={{ y: [0, -10, 0] }} 
-                    transition={{ duration: 2, repeat: Infinity }} 
+                  <motion.div
+                    animate={{ y: [0, -10, 0] }}
+                    transition={{ duration: 2, repeat: Infinity }}
                     className="absolute -right-2 sm:-right-4 top-4 sm:top-8 bg-card px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl shadow-lg border border-border"
                   >
                     <div className="flex items-center gap-1.5 sm:gap-2">
@@ -166,9 +166,9 @@ const About = () => {
                       <span className="font-semibold text-card-foreground text-xs sm:text-sm">50+ IIT</span>
                     </div>
                   </motion.div>
-                  <motion.div 
-                    animate={{ y: [0, 10, 0] }} 
-                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }} 
+                  <motion.div
+                    animate={{ y: [0, 10, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
                     className="absolute -left-2 sm:-left-4 bottom-4 sm:bottom-8 bg-card px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl shadow-lg border border-border"
                   >
                     <div className="flex items-center gap-1.5 sm:gap-2">
@@ -187,12 +187,12 @@ const About = () => {
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
               {achievements.map((stat, index) => (
-                <motion.div 
-                  key={stat.label} 
-                  initial={{ opacity: 0, y: 20 }} 
-                  whileInView={{ opacity: 1, y: 0 }} 
-                  viewport={{ once: true }} 
-                  transition={{ delay: index * 0.1 }} 
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
                   className="bg-card rounded-xl md:rounded-2xl p-4 md:p-6 border border-border shadow-lg text-center"
                 >
                   <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-2 md:mb-3">
@@ -213,9 +213,9 @@ const About = () => {
           <div className="container mx-auto px-4">
             <div className="grid lg:grid-cols-2 gap-8 md:gap-12">
               {/* Bio */}
-              <motion.div 
-                initial={{ opacity: 0, x: -30 }} 
-                whileInView={{ opacity: 1, x: 0 }} 
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
               >
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-4">
@@ -255,9 +255,9 @@ const About = () => {
               </motion.div>
 
               {/* Mission & Vision */}
-              <motion.div 
-                initial={{ opacity: 0, x: 30 }} 
-                whileInView={{ opacity: 1, x: 0 }} 
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 className="space-y-6"
               >
@@ -271,7 +271,7 @@ const About = () => {
 
                 <div className="space-y-4">
                   {/* Mission Card */}
-                  <motion.div 
+                  <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
@@ -289,7 +289,7 @@ const About = () => {
                   </motion.div>
 
                   {/* Vision Card */}
-                  <motion.div 
+                  <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
@@ -326,10 +326,10 @@ const About = () => {
         {/* Areas of Expertise Section */}
         <section className="pt-12 pb-16 md:pt-16 md:pb-20 bg-card border-t border-border overflow-hidden">
           <div className="container mx-auto px-4">
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }} 
-              whileInView={{ opacity: 1, y: 0 }} 
-              viewport={{ once: true }} 
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
               className="text-center mb-12"
             >
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-4">
@@ -346,13 +346,13 @@ const About = () => {
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {expertiseList.map((item, index) => (
-                <motion.div 
-                  key={item.title} 
-                  initial={{ opacity: 0, y: 30 }} 
-                  whileInView={{ opacity: 1, y: 0 }} 
-                  viewport={{ once: true }} 
-                  transition={{ delay: index * 0.05 }} 
-                  whileHover={{ y: -5 }} 
+                <motion.div
+                  key={item.title}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.05 }}
+                  whileHover={{ y: -5 }}
                   className="bg-background rounded-2xl p-6 border border-border shadow-md hover:shadow-xl transition-all"
                 >
                   <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
@@ -371,10 +371,10 @@ const About = () => {
         {/* Teaching Philosophy */}
         <section className="pt-8 pb-16 md:pt-12 md:pb-20 bg-secondary/30 overflow-hidden">
           <div className="container mx-auto px-4">
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }} 
-              whileInView={{ opacity: 1, y: 0 }} 
-              viewport={{ once: true }} 
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
               className="text-center mb-12"
             >
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-success/10 text-success mb-4">
@@ -391,13 +391,13 @@ const About = () => {
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
               {teachingPhilosophy.map((item, index) => (
-                <motion.div 
-                  key={item.title} 
-                  initial={{ opacity: 0, y: 30 }} 
-                  whileInView={{ opacity: 1, y: 0 }} 
-                  viewport={{ once: true }} 
-                  transition={{ delay: index * 0.1 }} 
-                  whileHover={{ y: -5 }} 
+                <motion.div
+                  key={item.title}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{ y: -5 }}
                   className="bg-card rounded-xl md:rounded-2xl p-5 md:p-6 border border-border shadow-md text-center"
                 >
                   <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3 md:mb-4">
@@ -416,10 +416,10 @@ const About = () => {
         {/* Journey Timeline */}
         <section className="pt-8 pb-16 md:pt-12 md:pb-20 overflow-hidden">
           <div className="container mx-auto px-4">
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }} 
-              whileInView={{ opacity: 1, y: 0 }} 
-              viewport={{ once: true }} 
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
               className="text-center mb-12"
             >
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-4">
@@ -433,12 +433,12 @@ const About = () => {
 
             <div className="max-w-3xl mx-auto">
               {timeline.map((item, index) => (
-                <motion.div 
-                  key={item.year} 
-                  initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }} 
-                  whileInView={{ opacity: 1, x: 0 }} 
-                  viewport={{ once: true }} 
-                  transition={{ delay: index * 0.1 }} 
+                <motion.div
+                  key={item.year}
+                  initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
                   className="relative pl-6 md:pl-8 pb-6 md:pb-8 border-l-2 border-primary/30 last:border-l-0 last:pb-0"
                 >
                   <div className="absolute -left-2.5 md:-left-3 top-0 w-5 h-5 md:w-6 md:h-6 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
@@ -460,10 +460,10 @@ const About = () => {
         {/* CTA Section */}
         <section className="pt-8 pb-16 md:pt-12 md:pb-20 bg-gradient-to-br from-primary/10 via-background to-accent/10">
           <div className="container mx-auto px-4">
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }} 
-              whileInView={{ opacity: 1, y: 0 }} 
-              viewport={{ once: true }} 
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
               className="text-center space-y-4 md:space-y-6"
             >
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold text-foreground">
