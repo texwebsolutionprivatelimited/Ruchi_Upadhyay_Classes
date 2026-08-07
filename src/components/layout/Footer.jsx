@@ -137,7 +137,7 @@ const Footer = () => {
         </p>
 
         {/* Center: Made By */}
-        <motion.a href="https://internshipcatalyst.in" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors order-1 lg:order-2 group" whileHover={{ scale: 1.05 }}>
+        <motion.a href="https://texwebsolution.in" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors order-1 lg:order-2 group" whileHover={{ scale: 1.05 }}>
           <span>Made by</span>
           <motion.span animate={{
             scale: [1, 1.2, 1],
@@ -149,7 +149,7 @@ const Footer = () => {
           }}>
             <Heart className="w-4 h-4 text-red-500 fill-current group-hover:drop-shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
           </motion.span>
-          <span className="font-semibold tracking-wide">Internship Catalyst</span>
+          <span className="font-semibold tracking-wide">TexWeb Solution</span>
         </motion.a>
 
         {/* Right: Policies */}
