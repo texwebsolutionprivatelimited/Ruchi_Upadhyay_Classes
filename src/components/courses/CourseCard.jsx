@@ -185,7 +185,7 @@ const CourseCard = ({ course, index = 0, showProgress = false }) => {
           {/* Action Buttons */}
           <div className="flex gap-3 pt-2">
             {!enrolled ? (<>
-              <Button variant="outline" size="sm" className="flex-1 border-primary/30 hover:bg-primary/5 text-primary font-bold rounded-xl btn-premium-hover">
+              <Button variant="outline" size="sm" className="flex-1 border-primary/30 text-primary hover:text-primary hover:border-primary/60 hover:bg-primary/10 font-bold rounded-xl btn-premium-hover transition-all">
                 EXPLORE
               </Button>
               <Button variant="gradient" size="sm" onClick={handleEnroll} disabled={isEnrolling} className="flex-1 btn-premium-hover shadow-lg font-bold rounded-xl">

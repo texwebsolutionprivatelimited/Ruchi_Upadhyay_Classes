@@ -1,17 +1,14 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import banner1 from "@/assets/Banner1.webp";
 import banner2 from "@/assets/Banner2.webp";
 import banner3 from "@/assets/Banner3.webp";
 import banner4 from "@/assets/Banner4.webp";
-import bannerm1 from "@/assets/Bannerm1.webp";
 import bannerm2 from "@/assets/Bannerm2.webp";
 import bannerm3 from "@/assets/Bannerm3.webp";
 import bannerm4 from "@/assets/Bannerm4.webp";
 
 const bannerSlides = [
-  { id: 1, image: banner1, mobileImage: bannerm1 },
   { id: 2, image: banner2, mobileImage: bannerm2 },
   { id: 3, image: banner3, mobileImage: bannerm3 },
   { id: 4, image: banner4, mobileImage: bannerm4 },

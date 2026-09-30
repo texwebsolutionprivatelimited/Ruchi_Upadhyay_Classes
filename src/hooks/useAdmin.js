@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { defaultChapterTests } from '@/data/chapterTests';
 export const useIsAdmin = () => {
     const { user } = useAuth();
     return useQuery({
@@ -44,12 +45,19 @@ export const useTests = (category) => {
                 query = query.eq('category', category);
             }
             const { data, error } = await query;
-            if (error)
-                throw error;
-            return data?.map(test => ({
+            if (error) {
+                console.error('Error fetching admin tests from Supabase:', error);
+            }
+            const dbTests = (data || []).map(test => ({
                 ...test,
                 questions: test.questions || []
             }));
+            const dbTitles = new Set(dbTests.map(t => (t.title || '').trim().toLowerCase()));
+            const extraDefaults = defaultChapterTests.filter(dt => {
+                if (category && dt.category.toLowerCase() !== category.toLowerCase()) return false;
+                return !dbTitles.has((dt.title || '').trim().toLowerCase());
+            });
+            return [...dbTests, ...extraDefaults];
         },
     });
 };
@@ -640,3 +648,95 @@ export const useBuyCategory = () => {
         },
     });
 };
+
+export const useUpdateFolderPrice = () => {
+    const queryClient = useQueryClient();
+    const { toast } = useToast();
+    return useMutation({
+        mutationFn: async ({ category, type, price }) => {
+            const table = type === 'notes' ? 'notes' : 'tests';
+            const numPrice = Math.max(0, Number(price) || 0);
+
+            // 1. Update all items in this category with new price in Supabase
+            const { data: updatedRows, error } = await supabase
+                .from(table)
+                .update({ price: numPrice })
+                .ilike('category', category)
+                .select('id');
+
+            if (error) {
+                console.warn('Supabase update category price warning:', error);
+            }
+
+            // 2. If it's tests and no rows existed in Supabase for this category,
+            // seed the default chapter tests into Supabase with the updated price!
+            if (table === 'tests' && (!updatedRows || updatedRows.length === 0)) {
+                const testsToSeed = defaultChapterTests
+                    .filter((dt) => dt.category.trim().toLowerCase() === category.trim().toLowerCase())
+                    .map((dt) => ({
+                        title: dt.title,
+                        description: dt.description || '',
+                        category: dt.category,
+                        duration_minutes: dt.duration_minutes || 30,
+                        total_marks: dt.total_marks || 50,
+                        reward_points: dt.reward_points || 50,
+                        questions: dt.questions || [],
+                        is_active: true,
+                        price: numPrice,
+                    }));
+
+                if (testsToSeed.length > 0) {
+                    const { error: seedErr } = await supabase
+                        .from('tests')
+                        .insert(testsToSeed);
+                    if (seedErr) {
+                        console.warn('Could not seed tests to Supabase:', seedErr);
+                    }
+                }
+            }
+
+            // 3. Save to localStorage for instant client fallback
+            try {
+                const storageKey = `rc_folder_prices_${type}`;
+                const storedPrices = JSON.parse(localStorage.getItem(storageKey) || '{}');
+                storedPrices[category] = numPrice;
+                storedPrices[category.trim()] = numPrice;
+                localStorage.setItem(storageKey, JSON.stringify(storedPrices));
+            } catch (err) {
+                console.error(err);
+            }
+
+            return { category, type, price: numPrice };
+        },
+        onSuccess: ({ category, type, price }) => {
+            queryClient.invalidateQueries({ queryKey: ['tests'] });
+            queryClient.invalidateQueries({ queryKey: ['public-tests'] });
+            queryClient.invalidateQueries({ queryKey: ['notes'] });
+            queryClient.invalidateQueries({ queryKey: ['public-notes'] });
+            queryClient.invalidateQueries({ queryKey: ['categories'] });
+            toast({ title: price === 0 ? 'Folder is now FREE!' : `Folder price set to ₹${price}` });
+        },
+        onError: (error) => {
+            toast({ title: 'Failed to update folder price', description: error.message, variant: 'destructive' });
+        },
+    });
+};
+
+export const useHasCourses = () => {
+    return useQuery({
+        queryKey: ['has-courses-count'],
+        queryFn: async () => {
+            try {
+                const { count, error } = await supabase
+                    .from('courses')
+                    .select('*', { count: 'exact', head: true });
+                if (error) return false;
+                return Boolean(count && count > 0);
+            } catch (err) {
+                return false;
+            }
+        },
+        staleTime: 1000 * 60 * 2, // 2 minutes
+    });
+};
+

@@ -2,9 +2,11 @@ import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin, Youtube, ArrowRight, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ruchiLogo from '@/assets/ruchi-logo.png';
+import { useHasCourses } from '@/hooks/useAdmin';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const { data: hasCourses } = useHasCourses();
   return (<footer className="relative bg-[#0F0F0F] text-white overflow-hidden border-t border-white/5">
     {/* Background Glows */}
     <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
@@ -51,7 +53,7 @@ const Footer = () => {
           <ul className="space-y-3.5 md:space-y-4">
             {[
               { name: 'Home', path: '/' },
-              { name: 'Courses', path: '/courses' },
+              ...(hasCourses ? [{ name: 'Courses', path: '/courses' }] : []),
               { name: 'Notes', path: '/notes' },
               { name: 'Tests', path: '/tests' },
               { name: 'Contact', path: '/contact' },
@@ -71,12 +73,12 @@ const Footer = () => {
           </h4>
           <ul className="space-y-3.5 md:space-y-4">
             {[
-              { name: 'Class 10th', path: '/courses/class-10' },
-              { name: 'Class 12th', path: '/courses/class-12' },
-              { name: 'IIT-JEE Prep', path: '/courses/iit-jee' },
-              { name: 'NEET Special', path: '/courses/neet' },
-              { name: 'Engineering Chem', path: '/courses/engineering' },
-              { name: 'Env. Science', path: '/courses/environmental' },
+              { name: 'Class 10th', path: hasCourses ? '/courses/class-10' : '/notes' },
+              { name: 'Class 12th', path: hasCourses ? '/courses/class-12' : '/notes' },
+              { name: 'IIT-JEE Prep', path: hasCourses ? '/courses/iit-jee' : '/notes' },
+              { name: 'NEET Special', path: hasCourses ? '/courses/neet' : '/notes' },
+              { name: 'Engineering Chem', path: hasCourses ? '/courses/engineering' : '/notes' },
+              { name: 'Env. Science', path: hasCourses ? '/courses/environmental' : '/notes' },
             ].map((item) => (<li key={item.name}>
               <Link to={item.path} className="text-gray-400 hover:text-primary transition-all duration-300 flex items-center justify-center sm:justify-start group text-base">
                 <div className="hidden sm:block w-1.5 h-1.5 rounded-full bg-primary/50 mr-3 group-hover:scale-150 group-hover:bg-primary transition-all duration-300" />

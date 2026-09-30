@@ -190,16 +190,27 @@ const Courses = () => {
             </h3>
             <p className="text-muted-foreground mb-6">
               {courses.length === 0
-                ? 'No courses have been added yet. Check back later!'
+                ? 'No video courses have been published by the instructor yet.'
                 : 'Try adjusting your search or filters'}
             </p>
-            {courses.length > 0 && (<Button variant="outline" onClick={() => {
-              setSearchQuery('');
-              setSelectedCategory('All');
-              setSelectedLevel('All Levels');
-            }}>
-              Clear Filters
-            </Button>)}
+            {courses.length === 0 ? (
+              <div className="flex flex-wrap justify-center gap-3">
+                <Link to="/notes">
+                  <Button variant="default">Browse Study Notes</Button>
+                </Link>
+                <Link to="/tests">
+                  <Button variant="outline">Browse Test Series</Button>
+                </Link>
+              </div>
+            ) : (
+              <Button variant="outline" onClick={() => {
+                setSearchQuery('');
+                setSelectedCategory('All');
+                setSelectedLevel('All Levels');
+              }}>
+                Clear Filters
+              </Button>
+            )}
           </motion.div>)}
         </div>
       </section>

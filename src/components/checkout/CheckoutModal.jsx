@@ -9,6 +9,11 @@ import { useReferrals } from '@/hooks/useReferrals';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import {
+  openRazorpayCheckout,
+  createServerlessRazorpayOrder,
+  verifyServerlessRazorpayPayment,
+} from '@/services/razorpay';
 const POINTS_PER_RUPEE = 100; // 100 points = ₹1 discount
 const CheckoutModal = ({ open, onOpenChange, course, onEnrollSuccess }) => {
     const { rewardPoints, refetch: refetchReferrals } = useReferrals();
@@ -37,7 +42,8 @@ const CheckoutModal = ({ open, onOpenChange, course, onEnrollSuccess }) => {
             return;
         }
         setIsProcessing(true);
-        try {
+
+        const completeEnrollment = async (paymentId, orderId) => {
             // Deduct points if used
             if (usePoints && pointsToUse > 0) {
                 const { data: profileData } = await supabase
@@ -46,19 +52,11 @@ const CheckoutModal = ({ open, onOpenChange, course, onEnrollSuccess }) => {
                     .eq('user_id', user.id)
                     .maybeSingle();
                 const currentPoints = profileData?.reward_points || 0;
-                if (currentPoints < pointsToUse) {
-                    toast.error('Insufficient reward points');
-                    setIsProcessing(false);
-                    return;
-                }
-                const { error: pointsError } = await supabase
-                    .from('profiles')
-                    .update({ reward_points: currentPoints - pointsToUse })
-                    .eq('user_id', user.id);
-                if (pointsError) {
-                    toast.error('Failed to apply points discount');
-                    setIsProcessing(false);
-                    return;
+                if (currentPoints >= pointsToUse) {
+                    await supabase
+                        .from('profiles')
+                        .update({ reward_points: currentPoints - pointsToUse })
+                        .eq('user_id', user.id);
                 }
             }
             // Create notification for the purchase
@@ -68,15 +66,6 @@ const CheckoutModal = ({ open, onOpenChange, course, onEnrollSuccess }) => {
                 message: `You have successfully enrolled in "${course.title}"${pointsDiscount > 0 ? `. Saved ₹${pointsDiscount} using ${pointsToUse} reward points!` : ''}`,
                 type: 'success',
             });
-            // If points were used, add a notification about points spent
-            if (usePoints && pointsToUse > 0) {
-                await supabase.from('notifications').insert({
-                    user_id: user.id,
-                    title: 'Points Redeemed',
-                    message: `You used ${pointsToUse} points for ₹${pointsDiscount} discount on "${course.title}"`,
-                    type: 'reward',
-                });
-            }
             // Record the purchase in the purchases table
             const { error: purchaseError } = await supabase.from('purchases').insert({
                 user_id: user.id,
@@ -85,15 +74,13 @@ const CheckoutModal = ({ open, onOpenChange, course, onEnrollSuccess }) => {
                 points_used: pointsToUse,
                 points_discount: pointsDiscount,
                 status: 'completed',
-                order_id: `CRS_${Date.now()}_${Math.random().toString(36).substring(7)}`,
-                payment_id: finalPrice === 0 ? 'free_enroll' : `internal_${Math.random().toString(36).substring(7)}`,
+                order_id: orderId || `CRS_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+                payment_id: paymentId,
                 paid_at: new Date().toISOString()
             });
             if (purchaseError) {
                 console.error('Error recording purchase:', purchaseError);
-                // We don't block enrollment if purchase record fails, but we should log it
             }
-            // Refresh referrals data to update points
             refetchReferrals();
             toast.success('Enrollment successful!', {
                 description: pointsDiscount > 0
@@ -102,12 +89,61 @@ const CheckoutModal = ({ open, onOpenChange, course, onEnrollSuccess }) => {
             });
             onEnrollSuccess();
             onOpenChange(false);
+            setIsProcessing(false);
+        };
+
+        try {
+            if (finalPrice === 0) {
+                await completeEnrollment('free_enroll', `FREE_${Date.now()}`);
+                return;
+            }
+
+            // 1. Create serverless Razorpay order
+            const serverlessOrder = await createServerlessRazorpayOrder({
+                amount: finalPrice,
+                receipt: `crs_${course.id.substring(0, 8)}`,
+                notes: { courseId: course.id, courseTitle: course.title, userId: user.id },
+            });
+
+            // 2. Open Razorpay Gateway
+            await openRazorpayCheckout({
+                amount: finalPrice,
+                name: 'Ruchi Upadhyay Classes',
+                description: `Enroll: ${course.title}`,
+                orderId: serverlessOrder.orderId,
+                prefill: {
+                    name: user.user_metadata?.full_name || user.email?.split('@')[0] || '',
+                    email: user.email || '',
+                },
+                onSuccess: async ({ paymentId, orderId, signature }) => {
+                    setIsProcessing(true);
+                    // 3. Serverless signature verification
+                    const verification = await verifyServerlessRazorpayPayment({
+                        razorpay_order_id: orderId,
+                        razorpay_payment_id: paymentId,
+                        razorpay_signature: signature,
+                    });
+
+                    if (!verification.verified) {
+                        toast.error('Payment verification failed on server. Contact support.');
+                        setIsProcessing(false);
+                        return;
+                    }
+
+                    await completeEnrollment(paymentId, orderId);
+                },
+                onDismiss: () => {
+                    setIsProcessing(false);
+                },
+                onError: (err) => {
+                    setIsProcessing(false);
+                    toast.error(err.message || 'Razorpay payment could not be processed.');
+                },
+            });
         }
         catch (error) {
             console.error('Checkout error:', error);
             toast.error('Something went wrong. Please try again.');
-        }
-        finally {
             setIsProcessing(false);
         }
     };

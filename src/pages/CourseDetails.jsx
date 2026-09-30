@@ -203,8 +203,12 @@ const CourseDetails = () => {
       {/* Hero Section */}
       <section className="py-8 md:py-16 bg-gradient-to-br from-primary/10 via-background to-accent/10">
         <div className="container mx-auto px-4 md:px-12">
-          <Button variant="outline" onClick={() => navigate(-1)} className="mb-4 md:mb-6 h-10 px-6 bg-background/50 backdrop-blur-sm border-border/60 hover:border-primary/50 hover:bg-primary/5 transition-all shadow-sm rounded-xl font-medium">
-            <ChevronLeft className="w-4 h-4 mr-2" />
+          <Button 
+            variant="outline" 
+            onClick={() => navigate(-1)} 
+            className="mb-4 md:mb-6 h-10 px-6 bg-background/80 backdrop-blur-sm border-border/70 text-foreground hover:text-primary hover:border-primary/50 hover:bg-primary/10 transition-all shadow-sm rounded-xl font-medium group"
+          >
+            <ChevronLeft className="w-4 h-4 mr-2 transition-transform group-hover:-translate-x-0.5" />
             Back
           </Button>
 

@@ -2,8 +2,10 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Play, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useHasCourses } from '@/hooks/useAdmin';
 
 const HeroContent = () => {
+  const { data: hasCourses } = useHasCourses();
   return (<section className="pt-4 pb-16 md:pt-6 md:pb-20 bg-gradient-to-b from-secondary/50 to-background">
     <div className="container mx-auto px-4">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center max-w-4xl mx-auto">
@@ -22,9 +24,9 @@ const HeroContent = () => {
         </p>
 
         <div className="flex flex-wrap justify-center gap-4">
-          <Link to="/courses" className="w-full sm:w-auto">
+          <Link to={hasCourses ? "/courses" : "/notes"} className="w-full sm:w-auto">
             <Button size="lg" className="w-full sm:w-auto gap-2">
-              Explore Courses
+              {hasCourses ? "Explore Courses" : "Explore Study Notes"}
               <ArrowRight className="w-5 h-5" />
             </Button>
           </Link>

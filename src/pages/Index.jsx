@@ -138,40 +138,38 @@ const Index = () => {
       {/* YouTube Videos Marquee Section */}
       <VideosMarquee />
 
-      {/* Featured Courses Section */}
-      <section className="pt-8 pb-16 md:pt-12 md:pb-20 overflow-hidden">
-        <div className="container mx-auto px-4">
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="flex flex-col items-center text-center gap-6 mb-12">
-            <div className="w-full">
-              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 text-accent text-sm font-medium mb-4">
-                ✨ Learning Path
-              </span>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-heading font-bold text-foreground">
-                Featured <span className="text-primary italic">Courses</span>
-              </h2>
+      {/* Featured Courses Section (Only renders when courses are created by admin) */}
+      {!coursesLoading && featuredCourses.length > 0 && (
+        <section className="pt-8 pb-16 md:pt-12 md:pb-20 overflow-hidden">
+          <div className="container mx-auto px-4">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="flex flex-col items-center text-center gap-6 mb-12">
+              <div className="w-full">
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 text-accent text-sm font-medium mb-4">
+                  ✨ Learning Path
+                </span>
+                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-heading font-bold text-foreground">
+                  Featured <span className="text-primary italic">Courses</span>
+                </h2>
+              </div>
+            </motion.div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+              {featuredCourses.map((course, index) => (
+                <CourseCard key={course.id} course={course} index={index} />
+              ))}
             </div>
-          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            {coursesLoading ? (
-              [1, 2, 3].map(i => <div key={i} className="h-[400px] bg-secondary/50 rounded-2xl animate-pulse" />)
-            ) : featuredCourses.length > 0 ? (
-              featuredCourses.map((course, index) => (<CourseCard key={course.id} course={course} index={index} />))
-            ) : (
-              <div className="col-span-full text-center py-10 text-muted-foreground">No featured courses available at the moment.</div>
-            )}
+            <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mt-12">
+              <Link to="/courses">
+                <Button variant="outline" size="default">
+                  View All Courses
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </Link>
+            </motion.div>
           </div>
-
-          <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mt-12">
-            <Link to="/courses">
-              <Button variant="outline" size="default">
-                View All Courses
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </Link>
-          </motion.div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Testimonials */}
       <div className="overflow-hidden">

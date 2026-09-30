@@ -5,7 +5,7 @@ import { Menu, X, LogIn, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ProfileDropdown from '@/components/layout/ProfileDropdown';
 import { useAuth } from '@/contexts/AuthContext';
-import { useIsAdmin } from '@/hooks/useAdmin';
+import { useIsAdmin, useHasCourses } from '@/hooks/useAdmin';
 import ruchiLogo from '@/assets/ruchi-logo.png';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,6 +28,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const { user, profile, signOut } = useAuth();
   const { data: isAdmin } = useIsAdmin();
+  const { data: hasCourses } = useHasCourses();
 
   const { data: showLeaderboard } = useQuery({
     queryKey: ['navbar-leaderboard-eligibility', user?.id],
@@ -59,11 +60,22 @@ const Navbar = () => {
   });
 
   const filteredNavLinks = navLinks.filter(link => {
+    // Only show All Courses if admin has created at least one course
+    if (link.path === '/courses' && !hasCourses) {
+      return false;
+    }
     if (link.path === '/leaderboard') {
       return showLeaderboard;
     }
     return true;
   });
+
+  const isLinkActive = (path) => {
+    if (path === '/') {
+      return location.pathname === '/';
+    }
+    return location.pathname === path || location.pathname.startsWith(`${path}/`);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -103,25 +115,28 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-8">
-            {filteredNavLinks.map((link) => (
-              <Link 
-                key={link.path} 
-                to={link.path} 
-                className={`relative text-base font-medium transition-colors hover:text-primary ${
-                  location.pathname === link.path
-                    ? 'text-primary'
-                    : 'text-muted-foreground'
-                }`}
-              >
-                {link.name}
-                {location.pathname === link.path && (
-                  <motion.div 
-                    layoutId="navbar-indicator" 
-                    className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full" 
-                  />
-                )}
-              </Link>
-            ))}
+            {filteredNavLinks.map((link) => {
+              const active = isLinkActive(link.path);
+              return (
+                <Link 
+                  key={link.path} 
+                  to={link.path} 
+                  className={`relative text-base font-semibold transition-colors hover:text-primary ${
+                    active
+                      ? 'text-primary'
+                      : 'text-muted-foreground'
+                  }`}
+                >
+                  {link.name}
+                  {active && (
+                    <motion.div 
+                      layoutId="navbar-indicator" 
+                      className="absolute -bottom-1.5 left-0 right-0 h-0.5 bg-primary rounded-full shadow-sm" 
+                    />
+                  )}
+                </Link>
+              );
+            })}
           </div>
 
           {/* Desktop/Right Actions */}
@@ -168,27 +183,30 @@ const Navbar = () => {
             className="lg:hidden fixed inset-x-4 top-24 z-50 bg-card/95 backdrop-blur-xl border border-border shadow-2xl rounded-2xl overflow-hidden shadow-primary/5"
           >
             <div className="p-4 space-y-1">
-              {filteredNavLinks.map((link) => (
-                <Link 
-                  key={link.path} 
-                  to={link.path} 
-                  onClick={() => setIsOpen(false)} 
-                  className={`flex items-center px-4 py-3 md:py-3.5 rounded-xl font-semibold text-base md:text-lg transition-all ${
-                    location.pathname === link.path
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-foreground hover:bg-secondary/80'
-                  }`}
-                >
-                  {link.name}
-                </Link>
-              ))}
+              {filteredNavLinks.map((link) => {
+                const active = isLinkActive(link.path);
+                return (
+                  <Link 
+                    key={link.path} 
+                    to={link.path} 
+                    onClick={() => setIsOpen(false)} 
+                    className={`flex items-center px-4 py-3 md:py-3.5 rounded-xl font-semibold text-base md:text-lg transition-all ${
+                      active
+                        ? 'bg-primary/10 text-primary font-bold shadow-xs'
+                        : 'text-foreground hover:bg-secondary/80'
+                    }`}
+                  >
+                    {link.name}
+                  </Link>
+                );
+              })}
 
               <div className="pt-4 mt-4 border-t border-border space-y-2">
                 {user ? (
                   <>
                     {isAdmin && (
                       <Link to="/admin" onClick={() => setIsOpen(false)} className="block">
-                        <Button variant="outline" className="w-full justify-start h-11 md:h-12 border-primary/50 text-primary hover:bg-primary/10 rounded-xl text-sm md:text-base">
+                        <Button variant="outline" className="w-full justify-start h-11 md:h-12 border-primary/50 text-primary hover:text-primary hover:border-primary hover:bg-primary/15 rounded-xl text-sm md:text-base transition-all">
                           <Shield className="w-4 h-4 mr-3" />
                           Admin Panel
                         </Button>

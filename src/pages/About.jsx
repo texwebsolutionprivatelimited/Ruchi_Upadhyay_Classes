@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import ruchiProfile from '@/assets/ruchi-profile.png';
 import Counter from '@/components/home/Counter';
+import { useHasCourses } from '@/hooks/useAdmin';
 
 const achievements = [
   { icon: Trophy, value: '50+', label: 'IIT-JEE Selections' },
@@ -105,6 +106,7 @@ const teachingPhilosophy = [
 ];
 
 const About = () => {
+  const { data: hasCourses } = useHasCourses();
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Navbar />
@@ -132,9 +134,9 @@ const About = () => {
                   <span className="text-primary font-semibold">Specializing in IIT-JEE, NEET & Board Preparation</span>
                 </p>
                 <div className="flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4 justify-center lg:justify-start">
-                  <Link to="/courses" className="w-full sm:w-auto">
+                  <Link to={hasCourses ? "/courses" : "/notes"} className="w-full sm:w-auto">
                     <Button size="lg" className="w-full sm:w-auto h-12 md:h-14">
-                      Explore Courses
+                      {hasCourses ? "Explore Courses" : "Explore Study Notes"}
                     </Button>
                   </Link>
                   <Link to="/contact" className="w-full sm:w-auto">
