@@ -434,10 +434,20 @@ export const useUsers = () => {
     return useQuery({
         queryKey: ['users-with-roles'],
         queryFn: async () => {
-            // Get all profiles
+            // First try the secure admin_get_users RPC which provides email and joined data
+            try {
+                const { data: rpcUsers, error: rpcError } = await supabase.rpc('admin_get_users');
+                if (!rpcError && rpcUsers) {
+                    return rpcUsers;
+                }
+            } catch (err) {
+                console.warn('admin_get_users RPC failed or not yet applied, falling back:', err);
+            }
+
+            // Fallback: Get profiles with is_blocked
             const { data: profiles, error: profilesError } = await supabase
                 .from('profiles')
-                .select('user_id, username, avatar_url, created_at')
+                .select('user_id, username, avatar_url, created_at, is_blocked')
                 .order('created_at', { ascending: false });
             if (profilesError)
                 throw profilesError;
@@ -452,11 +462,12 @@ export const useUsers = () => {
                 const userRole = roles?.find(r => r.user_id === profile.user_id);
                 return {
                     id: profile.user_id,
-                    email: '', // We don't have access to email from profiles
+                    email: '', // We don't have access to email from profiles fallback
                     username: profile.username,
                     avatar_url: profile.avatar_url,
                     created_at: profile.created_at,
                     role: userRole?.role,
+                    is_blocked: Boolean(profile.is_blocked),
                 };
             });
             return usersWithRoles;
@@ -504,6 +515,67 @@ export const useRemoveRole = () => {
         },
         onError: (error) => {
             toast({ title: 'Failed to remove role', description: error.message, variant: 'destructive' });
+        },
+    });
+};
+export const useDeleteUser = () => {
+    const queryClient = useQueryClient();
+    const { toast } = useToast();
+    return useMutation({
+        mutationFn: async (userId) => {
+            // Try secure RPC first
+            const { error: rpcError } = await supabase.rpc('admin_delete_user', {
+                target_user_id: userId
+            });
+            if (rpcError) {
+                // Fallback: direct delete from tables
+                console.warn('RPC admin_delete_user failed, attempting direct cascade delete:', rpcError);
+                await supabase.from('user_roles').delete().eq('user_id', userId);
+                await supabase.from('purchases').delete().eq('user_id', userId);
+                await supabase.from('test_results').delete().eq('user_id', userId);
+                const { error: profileError } = await supabase.from('profiles').delete().eq('user_id', userId);
+                if (profileError) throw profileError;
+            }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['users-with-roles'] });
+            toast({ title: 'User deleted successfully', description: 'User account and data have been removed.' });
+        },
+        onError: (error) => {
+            toast({ title: 'Failed to delete user', description: error.message, variant: 'destructive' });
+        },
+    });
+};
+export const useToggleBlockUser = () => {
+    const queryClient = useQueryClient();
+    const { toast } = useToast();
+    return useMutation({
+        mutationFn: async ({ userId, isBlocked }) => {
+            // Try secure RPC first
+            const { error: rpcError } = await supabase.rpc('admin_toggle_block_user', {
+                target_user_id: userId,
+                block_status: isBlocked
+            });
+            if (rpcError) {
+                // Fallback: direct update on profiles
+                console.warn('RPC admin_toggle_block_user failed, attempting direct update:', rpcError);
+                const { error: updateError } = await supabase
+                    .from('profiles')
+                    .update({ is_blocked: isBlocked })
+                    .eq('user_id', userId);
+                if (updateError) throw updateError;
+            }
+            return { userId, isBlocked };
+        },
+        onSuccess: ({ isBlocked }) => {
+            queryClient.invalidateQueries({ queryKey: ['users-with-roles'] });
+            toast({ 
+                title: isBlocked ? 'User blocked successfully' : 'User unblocked successfully',
+                description: isBlocked ? 'User will no longer be able to access restricted features.' : 'User access has been restored.'
+            });
+        },
+        onError: (error) => {
+            toast({ title: 'Failed to update user block status', description: error.message, variant: 'destructive' });
         },
     });
 };

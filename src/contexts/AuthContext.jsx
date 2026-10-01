@@ -26,6 +26,16 @@ export const AuthProvider = ({ children }) => {
             return null;
         }
         if (data) {
+            if (data.is_blocked) {
+                // If user is blocked, force sign out and inform them
+                await supabase.auth.signOut();
+                toast({
+                    title: 'Account Blocked',
+                    description: 'Your account has been blocked by the administrator. Please contact support.',
+                    variant: 'destructive',
+                });
+                return null;
+            }
             checkDailyStreak(data);
         }
         return data;
@@ -131,6 +141,27 @@ export const AuthProvider = ({ children }) => {
             });
             return { error };
         }
+
+        // Check if user is blocked
+        const userRes = await supabase.auth.getUser();
+        if (userRes.data?.user) {
+            const { data: userProfile } = await supabase
+                .from('profiles')
+                .select('is_blocked')
+                .eq('user_id', userRes.data.user.id)
+                .maybeSingle();
+
+            if (userProfile?.is_blocked) {
+                await supabase.auth.signOut();
+                toast({
+                    title: 'Account Blocked',
+                    description: 'Your account has been blocked by the administrator. Please contact support.',
+                    variant: 'destructive',
+                });
+                return { error: new Error('Account is blocked') };
+            }
+        }
+
         toast({
             title: 'Welcome back!',
             description: 'You have signed in successfully.',
