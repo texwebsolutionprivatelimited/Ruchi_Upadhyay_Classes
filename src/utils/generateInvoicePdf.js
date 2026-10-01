@@ -80,7 +80,7 @@ export const downloadInvoicePdf = async (purchaseData) => {
     doc.setFillColor(...primaryMaroon);
     doc.rect(0, 4, 210, 42, 'F');
 
-    // Load and place official logo inside a clean white card for maximum crispness
+    // Load and place official logo inside a clean white card
     const logoDataUrl = await getLogoDataUrl(ruchiLogo);
     if (logoDataUrl) {
       doc.setFillColor(255, 255, 255);
@@ -91,7 +91,7 @@ export const downloadInvoicePdf = async (purchaseData) => {
         console.warn('Could not add logo image:', err);
       }
     } else {
-      // Fallback logo monogram if image fails
+      // Fallback logo monogram
       doc.setFillColor(255, 255, 255);
       doc.roundedRect(15, 9, 36, 24, 2.5, 2.5, 'F');
       doc.setFont('helvetica', 'bold');
@@ -100,11 +100,11 @@ export const downloadInvoicePdf = async (purchaseData) => {
       doc.text('RUC', 33, 23, { align: 'center' });
     }
 
-    // Header Title & Contact Information (Website: ruchiupadhyayclasses.in)
+    // Header Title & Contact Information
     const headerTextX = logoDataUrl ? 64 : 56;
     doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(15);
+    doc.setFontSize(14.5);
     doc.text('RUCHI UPADHYAY CLASSES', headerTextX, 16);
 
     doc.setFont('helvetica', 'normal');
@@ -119,7 +119,7 @@ export const downloadInvoicePdf = async (purchaseData) => {
 
     // Invoice Header Details on Right Side
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(12);
+    doc.setFontSize(11.5);
     doc.setTextColor(255, 255, 255);
     doc.text('TAX INVOICE / RECEIPT', 195, 16, { align: 'right' });
 
@@ -135,98 +135,110 @@ export const downloadInvoicePdf = async (purchaseData) => {
     doc.setTextColor(167, 243, 208); // Emerald light tint
     doc.text('Payment Status: Completed', 195, 33, { align: 'right' });
 
-    // 3. Status Ribbon
+    // 3. Status Ribbon (FIXED: Zero overlap, clean emerald circle indicator, standard ASCII)
     let curY = 51;
     doc.setFillColor(236, 253, 245);
     doc.setDrawColor(...successEmerald);
     doc.roundedRect(15, curY, 180, 9.5, 2, 2, 'FD');
+
+    // Vector emerald live indicator dot (replaces problematic unicode ✓)
+    doc.setFillColor(...successEmerald);
+    doc.circle(20, curY + 4.8, 1.4, 'F');
+
     doc.setTextColor(...successEmerald);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9);
-    doc.text('✓ STATUS: PAYMENT VERIFIED & ACCESS UNLOCKED', 20, curY + 6.5);
-    doc.text('PAID VIA SECURE GATEWAY (RAZORPAY)', 190, curY + 6.5, { align: 'right' });
+    doc.setFontSize(8.5);
+    doc.text('STATUS: PAYMENT COMPLETED & ACCESS UNLOCKED', 24, curY + 6.2);
+    doc.text('RAZORPAY SECURE GATEWAY', 190, curY + 6.2, { align: 'right' });
 
     // 4. Two Column Information Cards (Student Info & Transaction Summary)
     curY = 65;
-    const cardW = 87;
-    const cardH = 40;
+    const leftCardW = 86;
+    const rightCardW = 90;
+    const rightCardX = 105;
+    const cardH = 43;
 
-    // Left Card: Student Info
+    // Left Card: Student Info (x=15, w=86, h=43)
     doc.setFillColor(...lightBg);
     doc.setDrawColor(...borderCard);
-    doc.roundedRect(15, curY, cardW, cardH, 2.5, 2.5, 'FD');
+    doc.roundedRect(15, curY, leftCardW, cardH, 2.5, 2.5, 'FD');
 
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9.5);
+    doc.setFontSize(9);
     doc.setTextColor(...primaryMaroon);
-    doc.text('BILLED TO (STUDENT)', 20, curY + 7.5);
+    doc.text('BILLED TO (STUDENT)', 20, curY + 7);
 
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10.5);
+    doc.setFontSize(10);
     doc.setTextColor(...darkText);
-    const safeStudentName = studentName.length > 32 ? studentName.substring(0, 30) + '...' : studentName;
+    const safeStudentName = studentName.length > 28 ? studentName.substring(0, 26) + '...' : studentName;
     doc.text(safeStudentName, 20, curY + 15);
 
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
+    doc.setFontSize(8);
     doc.setTextColor(...mutedText);
     if (purchaseData.studentEmail) {
-      doc.text(`Email: ${purchaseData.studentEmail}`, 20, curY + 22);
+      const safeEmail = purchaseData.studentEmail.length > 30 ? purchaseData.studentEmail.substring(0, 28) + '...' : purchaseData.studentEmail;
+      doc.text(`Email: ${safeEmail}`, 20, curY + 22);
     } else {
       doc.text('Registered Student Account', 20, curY + 22);
     }
-    if (purchaseData.userId) {
-      doc.text(`Student ID: ${purchaseData.userId.substring(0, 16)}...`, 20, curY + 28);
-    }
-    doc.text('Delivery: Online Student Portal (Madhya Pradesh, India)', 20, curY + 34);
 
-    // Right Card: Transaction Details
-    const rightCardX = 108;
+    if (purchaseData.userId) {
+      doc.text(`Student ID: ${purchaseData.userId.substring(0, 16)}...`, 20, curY + 28.5);
+    } else {
+      doc.text('Student ID: Verified Student', 20, curY + 28.5);
+    }
+    doc.text('Delivery: Online Student Portal (MP, India)', 20, curY + 35);
+
+    // Right Card: Transaction Details (x=105, w=90, h=43)
     doc.setFillColor(...lightBg);
     doc.setDrawColor(...borderCard);
-    doc.roundedRect(rightCardX, curY, cardW, cardH, 2.5, 2.5, 'FD');
+    doc.roundedRect(rightCardX, curY, rightCardW, cardH, 2.5, 2.5, 'FD');
 
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9.5);
+    doc.setFontSize(9);
     doc.setTextColor(...primaryMaroon);
-    doc.text('TRANSACTION DETAILS', rightCardX + 5, curY + 7.5);
+    doc.text('TRANSACTION DETAILS', rightCardX + 5, curY + 7);
 
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
+    doc.setFontSize(8);
     doc.setTextColor(...mutedText);
 
-    // Order ID
+    // Row 1: Order ID
     doc.text('Order ID:', rightCardX + 5, curY + 15);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...darkText);
-    const shortOrderId = orderId.length > 20 ? orderId.substring(0, 18) + '...' : orderId;
-    doc.text(shortOrderId, rightCardX + cardW - 5, curY + 15, { align: 'right' });
+    const safeOrderId = orderId.length > 22 ? orderId.substring(0, 20) + '...' : orderId;
+    doc.text(safeOrderId, rightCardX + rightCardW - 5, curY + 15, { align: 'right' });
 
-    // Payment ID
+    // Row 2: Payment ID
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...mutedText);
     doc.text('Payment ID:', rightCardX + 5, curY + 22);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...darkText);
-    const shortPaymentId = paymentId.length > 20 ? paymentId.substring(0, 18) + '...' : paymentId;
-    doc.text(shortPaymentId, rightCardX + cardW - 5, curY + 22, { align: 'right' });
+    const safePaymentId = paymentId.length > 22 ? paymentId.substring(0, 20) + '...' : paymentId;
+    doc.text(safePaymentId, rightCardX + rightCardW - 5, curY + 22, { align: 'right' });
 
-    // Date & Time
+    // Row 3: Date & Time
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...mutedText);
-    doc.text('Transaction Time:', rightCardX + 5, curY + 28);
+    doc.text('Transaction Time:', rightCardX + 5, curY + 28.5);
+    doc.setFont('helvetica', 'bold');
     doc.setTextColor(...darkText);
-    doc.text(formattedDate, rightCardX + cardW - 5, curY + 28, { align: 'right' });
+    doc.text(formattedDate, rightCardX + rightCardW - 5, curY + 28.5, { align: 'right' });
 
-    // Access Mode
+    // Row 4: Access Mode
+    doc.setFont('helvetica', 'normal');
     doc.setTextColor(...mutedText);
-    doc.text('Access Mode:', rightCardX + 5, curY + 34);
+    doc.text('Access Mode:', rightCardX + 5, curY + 35);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...successEmerald);
-    doc.text('Instant Portal Access', rightCardX + cardW - 5, curY + 34, { align: 'right' });
+    doc.text('Instant Portal Access', rightCardX + rightCardW - 5, curY + 35, { align: 'right' });
 
     // 5. Itemized Table (STRICT COLUMN BOUNDARIES TO PREVENT ANY COLLISION)
-    curY = 111;
+    curY = 114;
 
     // Table Header
     doc.setFillColor(...primaryMaroon);
@@ -236,24 +248,24 @@ export const downloadInvoicePdf = async (purchaseData) => {
     doc.setTextColor(255, 255, 255);
     doc.text('#', 19, curY + 6);
     doc.text('ITEM & DESCRIPTION', 28, curY + 6);
-    doc.text('CATEGORY / SUBJECT', 108, curY + 6);
-    doc.text('QTY', 154, curY + 6, { align: 'center' });
+    doc.text('CATEGORY / SUBJECT', 106, curY + 6);
+    doc.text('QTY', 152, curY + 6, { align: 'center' });
     doc.text('AMOUNT (INR)', 191, curY + 6, { align: 'right' });
 
     // Calculate Text Wraps to ensure ZERO OVERLAP
     curY += 9;
-    // Col 2: Description bounded to 76mm width
-    const titleLines = doc.splitTextToSize(itemTitle, 76);
-    const subDescLines = doc.splitTextToSize('Digital learning access & downloadable study materials', 76);
+    // Col 2: Description bounded to 74mm width
+    const titleLines = doc.splitTextToSize(itemTitle, 74);
+    const subDescLines = doc.splitTextToSize('Digital learning access & downloadable study materials', 74);
 
     // Col 3: Category / Type bounded strictly to 40mm width
     const categoryText = `${itemType}\n(${category})`;
     const catLines = doc.splitTextToSize(categoryText, 40);
 
-    // Calculate row height dynamically based on max line wrap
+    // Calculate row height dynamically with generous padding
     const descHeight = titleLines.length * 4.5 + subDescLines.length * 4;
     const catHeight = catLines.length * 4.5;
-    const rowHeight = Math.max(18, Math.max(descHeight, catHeight) + 6);
+    const rowHeight = Math.max(20, Math.max(descHeight, catHeight) + 6);
 
     // Table Row Background & Border
     doc.setFillColor(255, 255, 255);
@@ -264,10 +276,10 @@ export const downloadInvoicePdf = async (purchaseData) => {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
     doc.setTextColor(...darkText);
-    doc.text('1', 19, curY + 6.5);
+    doc.text('1', 19, curY + 7);
 
     // Col 2: Title and Sub-description
-    let textY = curY + 6.5;
+    let textY = curY + 7;
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8.5);
     doc.setTextColor(...darkText);
@@ -284,38 +296,39 @@ export const downloadInvoicePdf = async (purchaseData) => {
       textY += 3.8;
     });
 
-    // Col 3: Category / Type (Guaranteed within x=108 to x=148)
-    let catY = curY + 6.5;
+    // Col 3: Category / Type (Guaranteed within x=106 to x=146)
+    let catY = curY + 7;
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
     doc.setTextColor(...primaryMaroon);
     catLines.forEach((line) => {
-      doc.text(line, 108, catY);
+      doc.text(line, 106, catY);
       catY += 4.2;
     });
 
-    // Col 4: Qty (Centered at 154mm)
+    // Col 4: Qty (Centered at 152mm)
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(...darkText);
-    doc.text('1', 154, curY + 7, { align: 'center' });
+    doc.text('1', 152, curY + 7.5, { align: 'center' });
 
     // Col 5: Amount (Right aligned at 191mm, strictly isolated from col 3)
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9.5);
     doc.setTextColor(...darkText);
-    doc.text(`Rs. ${amount.toFixed(2)}`, 191, curY + 7, { align: 'right' });
+    doc.text(`Rs. ${amount.toFixed(2)}`, 191, curY + 7.5, { align: 'right' });
 
     // 6. Summary Calculation Box & Digital Verification Box
     curY += rowHeight + 8;
-    const calcBoxX = 114;
-    const calcBoxW = 81;
-    const boxHeight = pointsDiscount > 0 ? 38 : 30;
+    const calcBoxX = 112;
+    const calcBoxW = 83;
+    const leftBoxW = 93;
+    const boxHeight = pointsDiscount > 0 ? 40 : 34;
 
-    // Digital Verification Seal on Left (x=15, w=94)
+    // Digital Verification Seal on Left (x=15, w=93, h=boxHeight)
     doc.setFillColor(...lightBg);
     doc.setDrawColor(...borderCard);
-    doc.roundedRect(15, curY, 94, boxHeight, 2.5, 2.5, 'FD');
+    doc.roundedRect(15, curY, leftBoxW, boxHeight, 2.5, 2.5, 'FD');
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
@@ -325,16 +338,20 @@ export const downloadInvoicePdf = async (purchaseData) => {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
     doc.setTextColor(...mutedText);
-    doc.text('This is a digitally generated tax receipt valid for', 20, curY + 14);
+    doc.text('This is an authentic digitally generated tax receipt valid for', 20, curY + 14);
     doc.text('course enrollments & study packs at Ruchi Upadhyay Classes.', 20, curY + 18.5);
-    doc.text('No physical signature is required under IT Act.', 20, curY + 23);
+    doc.text('No physical signature required under Indian IT Act 2000.', 20, curY + 23);
+
+    // Vector emerald authenticity seal bullet (fits easily within 93mm box)
+    doc.setFillColor(...successEmerald);
+    doc.circle(21, curY + 28.5, 1.2, 'F');
 
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
+    doc.setFontSize(7.5);
     doc.setTextColor(...successEmerald);
-    doc.text('✓ Authenticity: Cryptographically Verified & Secured', 20, curY + 28);
+    doc.text('Digitally Signed & Cryptographically Verified', 24, curY + 29.5);
 
-    // Summary Box on Right (x=114, w=81)
+    // Summary Box on Right (x=112, w=83, h=boxHeight)
     doc.setFillColor(...lightBg);
     doc.setDrawColor(...borderCard);
     doc.roundedRect(calcBoxX, curY, calcBoxW, boxHeight, 2.5, 2.5, 'FD');
@@ -352,7 +369,7 @@ export const downloadInvoicePdf = async (purchaseData) => {
       sumY += 7.5;
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(...mutedText);
-      doc.text('Reward Points Discount:', calcBoxX + 5, sumY);
+      doc.text('Points Discount:', calcBoxX + 5, sumY);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(...successEmerald);
       doc.text(`- Rs. ${pointsDiscount.toFixed(2)}`, calcBoxX + calcBoxW - 5, sumY, { align: 'right' });
@@ -360,19 +377,19 @@ export const downloadInvoicePdf = async (purchaseData) => {
 
     sumY += 7.5;
     doc.setDrawColor(203, 213, 225);
-    doc.line(calcBoxX + 5, sumY - 1.5, calcBoxX + calcBoxW - 5, sumY - 1.5);
+    doc.line(calcBoxX + 5, sumY - 1, calcBoxX + calcBoxW - 5, sumY - 1);
 
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10.5);
+    doc.setFontSize(10);
     doc.setTextColor(...primaryMaroon);
-    doc.text('Total Paid:', calcBoxX + 5, sumY + 4);
+    doc.text('Total Paid:', calcBoxX + 5, sumY + 5);
 
-    doc.setFontSize(11.5);
+    doc.setFontSize(11);
     doc.setTextColor(...primaryMaroon);
-    doc.text(`Rs. ${amount.toFixed(2)}`, calcBoxX + calcBoxW - 5, sumY + 4, { align: 'right' });
+    doc.text(`Rs. ${amount.toFixed(2)}`, calcBoxX + calcBoxW - 5, sumY + 5, { align: 'right' });
 
-    // 7. Important Student Guidelines / Terms
-    curY = 224;
+    // 7. Important Student Guidelines / Terms (Dynamically positioned below boxes)
+    curY = curY + boxHeight + 8;
     doc.setDrawColor(...borderCard);
     doc.line(15, curY, 195, curY);
 
@@ -385,7 +402,7 @@ export const downloadInvoicePdf = async (purchaseData) => {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
     doc.setTextColor(...mutedText);
-    doc.text('1. All course lectures, notes PDFs, and test series are for the exclusive educational use of the registered student.', 15, curY + 5);
+    doc.text('1. All course lectures, notes PDFs, and test series are for exclusive educational use of the registered student.', 15, curY + 5);
     doc.text('2. Sharing, recording, or commercial redistribution of study materials is prohibited and subject to account suspension.', 15, curY + 9.5);
     doc.text('3. You can access your unlocked materials 24/7 by logging in at https://ruchiupadhyayclasses.in', 15, curY + 14);
     doc.text('4. For doubts, syllabus guidance, or technical support, contact +91 72258 14452 or email support@ruchiupadhyayclasses.in.', 15, curY + 18.5);
