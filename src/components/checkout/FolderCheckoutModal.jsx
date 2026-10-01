@@ -22,6 +22,7 @@ import {
   createServerlessRazorpayOrder,
   verifyServerlessRazorpayPayment,
 } from '@/services/razorpay';
+import { notifyAdminsAboutPurchase } from '@/utils/notifyAdmin';
 
 const POINTS_PER_RUPEE = 100; // 100 points = ₹1 discount
 
@@ -150,9 +151,25 @@ export const FolderCheckoutModal = ({
         console.warn('Notification log error:', notifErr);
       }
 
-      // 4. Invalidate queries so cards reflect UNLOCKED immediately
+      // 4. Notify Admins about this folder purchase
+      try {
+        const studentName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Student';
+        const itemType = (folder.type || 'notes') === 'notes' ? 'Notes Package' : 'Test Series Bundle';
+        await notifyAdminsAboutPurchase({
+          studentName,
+          itemTitle: folder.name,
+          itemType,
+          amount: finalPrice,
+          orderId: purchaseRecords[0]?.order_id || `CAT_${Date.now()}`,
+        });
+      } catch (adminErr) {
+        console.warn('Admin notification error:', adminErr);
+      }
+
+      // 5. Invalidate queries so cards reflect UNLOCKED immediately
       queryClient.invalidateQueries({ queryKey: ['category-purchases'] });
       queryClient.invalidateQueries({ queryKey: ['user-purchases'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-all-purchases'] });
       if (refetchReferrals) refetchReferrals();
 
       if ((folder.type || 'notes') === 'notes') {

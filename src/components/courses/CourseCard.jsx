@@ -8,8 +8,7 @@ import { useCourses } from '@/hooks/useCourses';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 const CourseCard = ({ course, index = 0, showProgress = false }) => {
-  const [isEnrolling, setIsEnrolling] = useState(false);
-  const { enrollInCourse, isEnrolled, getProgress, refetch } = useCourses();
+  const { isEnrolled, getProgress, refetch } = useCourses();
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -25,16 +24,19 @@ const CourseCard = ({ course, index = 0, showProgress = false }) => {
   const discount = course.originalPrice
     ? Math.round((1 - course.price / course.originalPrice) * 100)
     : 0;
-  const handleEnroll = async (e) => {
+  const handleBuyNow = (e) => {
     e.preventDefault();
     e.stopPropagation();
     if (!user) {
       navigate('/login');
       return;
     }
-    setIsEnrolling(true);
-    await enrollInCourse(course.id);
-    setIsEnrolling(false);
+    navigate(`/course/${course.id}?buy=true`);
+  };
+  const handleExplore = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(`/course/${course.id}`);
   };
   const handleShare = async (e) => {
     e.preventDefault();
@@ -185,17 +187,28 @@ const CourseCard = ({ course, index = 0, showProgress = false }) => {
           {/* Action Buttons */}
           <div className="flex gap-3 pt-2">
             {!enrolled ? (<>
-              <Button variant="outline" size="sm" className="flex-1 border-primary/30 text-primary hover:text-primary hover:border-primary/60 hover:bg-primary/10 font-bold rounded-xl btn-premium-hover transition-all">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExplore}
+                className="flex-1 border-primary/30 text-primary hover:text-primary hover:border-primary/60 hover:bg-primary/10 font-bold rounded-xl btn-premium-hover transition-all"
+              >
                 EXPLORE
               </Button>
-              <Button variant="gradient" size="sm" onClick={handleEnroll} disabled={isEnrolling} className="flex-1 btn-premium-hover shadow-lg font-bold rounded-xl">
-                {isEnrolling ? (<>
-                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                  Enrolling...
-                </>) : ('BUY NOW')}
+              <Button
+                variant="gradient"
+                size="sm"
+                onClick={handleBuyNow}
+                className="flex-1 btn-premium-hover shadow-lg font-bold rounded-xl"
+              >
+                BUY NOW
               </Button>
             </>) : (<div className="flex justify-center">
-              <Button variant="gradient" className="w-auto px-8 h-9 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 rounded-full group/btn relative overflow-hidden">
+              <Button
+                variant="gradient"
+                onClick={handleExplore}
+                className="w-auto px-8 h-9 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 rounded-full group/btn relative overflow-hidden"
+              >
                 <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700 skew-x-12" />
                 <span className="text-xs font-bold tracking-wide mr-2">RESUME</span>
                 <Play className="w-3 h-3 fill-current group-hover/btn:translate-x-0.5 transition-transform" />

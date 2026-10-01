@@ -14,6 +14,7 @@ import {
   createServerlessRazorpayOrder,
   verifyServerlessRazorpayPayment,
 } from '@/services/razorpay';
+import { notifyAdminsAboutPurchase } from '@/utils/notifyAdmin';
 const POINTS_PER_RUPEE = 100; // 100 points = ₹1 discount
 const CheckoutModal = ({ open, onOpenChange, course, onEnrollSuccess }) => {
     const { rewardPoints, refetch: refetchReferrals } = useReferrals();
@@ -66,6 +67,7 @@ const CheckoutModal = ({ open, onOpenChange, course, onEnrollSuccess }) => {
                 message: `You have successfully enrolled in "${course.title}"${pointsDiscount > 0 ? `. Saved ₹${pointsDiscount} using ${pointsToUse} reward points!` : ''}`,
                 type: 'success',
             });
+            const finalOrderId = orderId || `CRS_${Date.now()}_${Math.random().toString(36).substring(7)}`;
             // Record the purchase in the purchases table
             const { error: purchaseError } = await supabase.from('purchases').insert({
                 user_id: user.id,
@@ -74,13 +76,24 @@ const CheckoutModal = ({ open, onOpenChange, course, onEnrollSuccess }) => {
                 points_used: pointsToUse,
                 points_discount: pointsDiscount,
                 status: 'completed',
-                order_id: orderId || `CRS_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+                order_id: finalOrderId,
                 payment_id: paymentId,
                 paid_at: new Date().toISOString()
             });
             if (purchaseError) {
                 console.error('Error recording purchase:', purchaseError);
             }
+
+            // Notify Admin about this purchase
+            const studentName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Student';
+            await notifyAdminsAboutPurchase({
+                studentName,
+                itemTitle: course.title,
+                itemType: 'Course',
+                amount: finalPrice,
+                orderId: finalOrderId,
+            });
+
             refetchReferrals();
             toast.success('Enrollment successful!', {
                 description: pointsDiscount > 0

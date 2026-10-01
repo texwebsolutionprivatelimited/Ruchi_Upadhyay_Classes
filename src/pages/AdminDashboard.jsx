@@ -1,17 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { BookOpen, Trophy, Search, BarChart3, PieChart, Activity, Settings, Bell, LogOut, Menu, X, FileText, ClipboardList, Video, Shield } from 'lucide-react';
+import { BookOpen, Trophy, Search, BarChart3, PieChart, Activity, Settings, Bell, LogOut, Menu, X, FileText, ClipboardList, Video, Shield, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsAdmin, useNotes, useTests, useCoursesList } from '@/hooks/useAdmin';
+import { useNotifications } from '@/hooks/useNotifications';
 import AdminNotes from '@/components/admin/AdminNotes';
 import AdminTests from '@/components/admin/AdminTests';
 import AdminCourses from '@/components/admin/AdminCourses';
 import AdminCurriculum from '@/components/admin/AdminCurriculum';
 import AdminUsers from '@/components/admin/AdminUsers';
+import AdminPurchases from '@/components/admin/AdminPurchases';
 import EnrollmentAnalytics from '@/components/admin/EnrollmentAnalytics';
 
 const AdminDashboard = () => {
@@ -23,6 +25,7 @@ const AdminDashboard = () => {
   const { data: notes } = useNotes();
   const { data: tests } = useTests();
   const { data: courses } = useCoursesList();
+  const { unreadCount } = useNotifications();
 
   useEffect(() => {
     if (!isCheckingAdmin && !isAdmin && user) {
@@ -39,6 +42,7 @@ const AdminDashboard = () => {
 
   const sidebarItems = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
+    { id: 'purchases', label: 'Purchases & Orders', icon: ShoppingCart },
     { id: 'courses', label: 'Courses', icon: BookOpen },
     { id: 'curriculum', label: 'Curriculum', icon: Video },
     { id: 'tests', label: 'Tests', icon: ClipboardList },
@@ -89,6 +93,8 @@ const AdminDashboard = () => {
 
   const renderContent = () => {
     switch (activeTab) {
+      case 'purchases':
+        return <AdminPurchases />;
       case 'courses':
         return <AdminCourses />;
       case 'curriculum':
@@ -121,20 +127,26 @@ const AdminDashboard = () => {
           </div>
 
           {/* Quick Actions */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="bg-card rounded-2xl p-5 md:p-6 border border-border cursor-pointer hover:border-primary/50 transition-colors" onClick={() => setActiveTab('courses')}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-card rounded-2xl p-5 md:p-6 border border-border cursor-pointer hover:border-primary/50 transition-colors shadow-sm" onClick={() => setActiveTab('purchases')}>
+              <ShoppingCart className="w-8 h-8 md:w-10 md:h-10 text-primary mb-3 md:mb-4" />
+              <h3 className="text-base md:text-lg font-semibold mb-1 md:mb-2">Purchases & Orders</h3>
+              <p className="text-xs md:text-sm text-muted-foreground">Track sales, who bought what & invoices</p>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="bg-card rounded-2xl p-5 md:p-6 border border-border cursor-pointer hover:border-primary/50 transition-colors shadow-sm" onClick={() => setActiveTab('courses')}>
               <BookOpen className="w-8 h-8 md:w-10 md:h-10 text-primary mb-3 md:mb-4" />
               <h3 className="text-base md:text-lg font-semibold mb-1 md:mb-2">Courses</h3>
               <p className="text-xs md:text-sm text-muted-foreground">Manage courses and content</p>
             </motion.div>
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="bg-card rounded-2xl p-5 md:p-6 border border-border cursor-pointer hover:border-primary/50 transition-colors" onClick={() => setActiveTab('tests')}>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="bg-card rounded-2xl p-5 md:p-6 border border-border cursor-pointer hover:border-primary/50 transition-colors shadow-sm" onClick={() => setActiveTab('tests')}>
               <ClipboardList className="w-8 h-8 md:w-10 md:h-10 text-accent mb-3 md:mb-4" />
               <h3 className="text-base md:text-lg font-semibold mb-1 md:mb-2">Tests</h3>
               <p className="text-xs md:text-sm text-muted-foreground">Create and manage tests</p>
             </motion.div>
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="bg-card rounded-2xl p-5 md:p-6 border border-border cursor-pointer hover:border-primary/50 transition-colors" onClick={() => setActiveTab('notes')}>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="bg-card rounded-2xl p-5 md:p-6 border border-border cursor-pointer hover:border-primary/50 transition-colors shadow-sm" onClick={() => setActiveTab('notes')}>
               <FileText className="w-8 h-8 md:w-10 md:h-10 text-success mb-3 md:mb-4" />
               <h3 className="text-base md:text-lg font-semibold mb-1 md:mb-2">Notes</h3>
               <p className="text-xs md:text-sm text-muted-foreground">Manage study materials</p>
@@ -227,8 +239,19 @@ const AdminDashboard = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input placeholder="Search..." className="pl-10 w-48 lg:w-64" />
           </div>
-          <Button variant="outline" size="icon" className="hidden sm:flex">
-            <Bell className="w-5 h-5" />
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => navigate('/notifications')}
+            className="hidden sm:flex relative"
+            title={`Notifications (${unreadCount} unread)`}
+          >
+            <Bell className="w-5 h-5 text-muted-foreground hover:text-foreground" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
           </Button>
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full gradient-primary flex items-center justify-center text-primary-foreground font-semibold text-sm">
             {user?.email?.charAt(0).toUpperCase()}

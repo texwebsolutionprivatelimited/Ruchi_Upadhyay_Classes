@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Star, Clock, Users, Zap, BookOpen, CheckCircle, Loader2, Play, ChevronLeft, Award, Target, FileText, Video, ArrowRight, GraduationCap, Globe, Shield, Coins, HelpCircle, Download, Calendar, Languages } from 'lucide-react';
+import { Star, Clock, Users, Zap, BookOpen, CheckCircle, Loader2, Play, ChevronLeft, Award, Target, FileText, Video, ArrowRight, GraduationCap, Globe, Shield, Coins, HelpCircle, Download, Calendar, Languages, Lock } from 'lucide-react';
 import ChemistryLoader from '@/components/ui/ChemistryLoader';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -27,6 +27,7 @@ const POINTS_PER_RUPEE = 100;
 const CourseDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [currentVideo, setCurrentVideo] = useState(null);
@@ -85,6 +86,23 @@ const CourseDetails = () => {
     status: dbCourse.status
   } : null;
 
+  const enrolled = course ? isEnrolled(course.id) : false;
+
+  // Auto trigger checkout modal if visited via 'BUY NOW' (?buy=true)
+  useEffect(() => {
+    if (searchParams.get('buy') === 'true' && course && !coursesLoading && !enrolled) {
+      if (!user) {
+        toast({
+          title: 'Sign in to enroll',
+          description: 'Please sign in or create an account to purchase this course.',
+        });
+        navigate('/login', { state: { from: `/course/${id}?buy=true` } });
+      } else {
+        setShowCheckout(true);
+      }
+    }
+  }, [searchParams, course, coursesLoading, enrolled, user, id, navigate, toast]);
+
   if (coursesLoading) {
     return (<div className="min-h-screen bg-background">
       <Navbar />
@@ -109,7 +127,6 @@ const CourseDetails = () => {
     </div>);
   }
 
-  const enrolled = isEnrolled(course.id);
   const progress = getProgress(course.id);
   const discount = course.originalPrice
     ? Math.round((1 - course.price / course.originalPrice) * 100)
@@ -118,7 +135,11 @@ const CourseDetails = () => {
 
   const handleEnrollClick = () => {
     if (!user) {
-      navigate('/login');
+      toast({
+        title: 'Sign in to enroll',
+        description: 'Please sign in or create an account to purchase this course.',
+      });
+      navigate('/login', { state: { from: `/course/${id}?buy=true` } });
       return;
     }
     setShowCheckout(true);
@@ -150,7 +171,8 @@ const CourseDetails = () => {
         title: lesson.title,
         duration: lesson.duration || '0 min',
         type: 'video',
-        videoId: lesson.youtube_video_id || '',
+        // Mask video ID for non-enrolled students on paid lessons
+        videoId: (enrolled || lesson.is_free) ? (lesson.youtube_video_id || '') : '',
         is_free: lesson.is_free,
       })),
     }
@@ -160,7 +182,7 @@ const CourseDetails = () => {
     if (!enrolled && !lesson.is_free) {
       toast({
         title: 'Enrollment Required',
-        description: 'Please enroll in this course to watch this lesson.',
+        description: 'This video lesson is locked. Please enroll in the course to access the complete video curriculum.',
         variant: 'destructive',
       });
       return;
@@ -446,9 +468,25 @@ const CourseDetails = () => {
                       {section.lessons.map((lesson, lIndex) => {
                         const lessonCompleted = isLessonCompleted(sIndex, lIndex);
                         const canAccess = enrolled || lesson.is_free;
-                        return (<div key={lesson.id} onClick={() => handleLessonClick(sIndex, lIndex, lesson)} className={`flex items-center gap-4 p-4 transition-all duration-200 ${canAccess ? 'cursor-pointer hover:bg-secondary/30' : 'cursor-not-allowed opacity-60'}`}>
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${lessonCompleted ? 'bg-success/20 text-success' : 'bg-primary/10 text-primary'}`}>
-                            {lessonCompleted ? <CheckCircle className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current" />}
+                        return (<div
+                          key={lesson.id}
+                          onClick={() => handleLessonClick(sIndex, lIndex, lesson)}
+                          className={`flex items-center gap-4 p-4 transition-all duration-200 ${canAccess ? 'cursor-pointer hover:bg-secondary/30' : 'cursor-not-allowed opacity-75 hover:bg-destructive/5'}`}
+                        >
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                            lessonCompleted
+                              ? 'bg-success/20 text-success'
+                              : canAccess
+                              ? 'bg-primary/10 text-primary'
+                              : 'bg-muted text-muted-foreground'
+                          }`}>
+                            {lessonCompleted ? (
+                              <CheckCircle className="w-4 h-4" />
+                            ) : canAccess ? (
+                              <Play className="w-4 h-4 fill-current" />
+                            ) : (
+                              <Lock className="w-3.5 h-3.5" />
+                            )}
                           </div>
 
                           <div className="flex-1 min-w-0">
@@ -459,8 +497,16 @@ const CourseDetails = () => {
                               <span className="text-xs text-muted-foreground shrink-0 ml-2">{lesson.duration}</span>
                             </div>
                             <div className="flex items-center gap-2">
-                              {lesson.is_free && !enrolled && (<Badge variant="secondary" className="h-5 text-[10px] px-1.5">Free Preview</Badge>)}
-                              {!canAccess && <Shield className="w-3 h-3 text-muted-foreground" />}
+                              {lesson.is_free && !enrolled && (
+                                <Badge variant="secondary" className="h-5 text-[10px] px-1.5 bg-emerald-500/10 text-emerald-600 border-emerald-500/20 font-semibold">
+                                  Free Preview
+                                </Badge>
+                              )}
+                              {!canAccess && (
+                                <Badge variant="outline" className="h-5 text-[10px] px-1.5 text-muted-foreground border-border gap-1 font-medium">
+                                  <Lock className="w-2.5 h-2.5" /> Locked
+                                </Badge>
+                              )}
                             </div>
                           </div>
                         </div>);
@@ -483,26 +529,58 @@ const CourseDetails = () => {
                 </div>
 
                 {studyMaterials.length > 0 ? (<div className="grid md:grid-cols-2 gap-4">
-                  {studyMaterials.map((file, index) => (<Card key={file.id} className="hover:shadow-md transition-shadow cursor-pointer group" onClick={() => {
-                    if (!enrolled && !file.is_free) {
-                      toast({ title: "Enrollment Required", description: "Enroll to access materials.", variant: "destructive" });
-                      return;
-                    }
-                    if (file.file_url)
-                      window.open(file.file_url, '_blank');
-                  }}>
-                    <CardContent className="p-4 flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                        <FileText className="w-6 h-6 text-blue-500" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-foreground mb-1 group-hover:text-primary transition-colors">{file.title}</h3>
-                        <p className="text-sm text-muted-foreground line-clamp-2">{file.description || "No description"}</p>
-                        {file.is_free && !enrolled && <Badge variant="secondary" className="mt-2">Free</Badge>}
-                      </div>
-                      <Download className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </CardContent>
-                  </Card>))}
+                  {studyMaterials.map((file, index) => {
+                    const canAccess = enrolled || file.is_free;
+                    return (
+                      <Card
+                        key={file.id}
+                        className={`transition-all ${canAccess ? 'hover:shadow-md cursor-pointer group' : 'opacity-80 cursor-not-allowed border-dashed'}`}
+                        onClick={() => {
+                          if (!canAccess) {
+                            toast({
+                              title: "Enrollment Required",
+                              description: "Please enroll in this course to access and download study materials.",
+                              variant: "destructive"
+                            });
+                            return;
+                          }
+                          if (file.file_url)
+                            window.open(file.file_url, '_blank');
+                        }}
+                      >
+                        <CardContent className="p-4 flex items-start gap-4">
+                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-transform ${
+                            canAccess ? 'bg-blue-500/10 text-blue-500 group-hover:scale-105' : 'bg-muted text-muted-foreground'
+                          }`}>
+                            {canAccess ? <FileText className="w-6 h-6 text-blue-500" /> : <Lock className="w-5 h-5 text-muted-foreground" />}
+                          </div>
+                          <div className="flex-1">
+                            <h3 className={`font-semibold mb-1 transition-colors ${canAccess ? 'text-foreground group-hover:text-primary' : 'text-muted-foreground'}`}>
+                              {file.title}
+                            </h3>
+                            <p className="text-sm text-muted-foreground line-clamp-2">{file.description || "No description"}</p>
+                            <div className="mt-2 flex items-center gap-2">
+                              {file.is_free && !enrolled && (
+                                <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-[10px]">
+                                  Free Preview
+                                </Badge>
+                              )}
+                              {!canAccess && (
+                                <Badge variant="outline" className="text-muted-foreground text-[10px] gap-1">
+                                  <Lock className="w-2.5 h-2.5" /> Locked
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          {canAccess ? (
+                            <Download className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0 mt-1" />
+                          ) : (
+                            <Lock className="w-4 h-4 text-muted-foreground shrink-0 mt-1" />
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>) : (<div className="text-center py-20 bg-card rounded-2xl border border-dashed border-border">
                   <FileText className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                   <h3 className="text-lg font-semibold mb-2">No study materials</h3>
@@ -519,26 +597,54 @@ const CourseDetails = () => {
                 </div>
 
                 {dpps.length > 0 ? (<div className="space-y-4">
-                  {dpps.map((dpp, index) => (<div key={dpp.id} className="bg-card border border-border p-4 rounded-xl flex items-center justify-between hover:border-primary/50 transition-colors">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-500 font-bold">
-                        {index + 1}
+                  {dpps.map((dpp, index) => {
+                    const canAccess = enrolled || dpp.is_free;
+                    return (
+                      <div key={dpp.id} className="bg-card border border-border p-4 rounded-xl flex items-center justify-between hover:border-primary/50 transition-colors">
+                        <div className="flex items-center gap-4">
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold ${
+                            canAccess ? 'bg-orange-500/10 text-orange-500' : 'bg-muted text-muted-foreground'
+                          }`}>
+                            {canAccess ? index + 1 : <Lock className="w-4 h-4" />}
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-foreground flex items-center gap-2">
+                              {dpp.title}
+                              {!canAccess && (
+                                <Badge variant="outline" className="text-[10px] text-muted-foreground">Locked</Badge>
+                              )}
+                            </h3>
+                            <p className="text-sm text-muted-foreground">{dpp.description || "Practice questions"}</p>
+                          </div>
+                        </div>
+                        <Button
+                          variant={canAccess ? "outline" : "secondary"}
+                          size="sm"
+                          onClick={() => {
+                            if (!canAccess) {
+                              toast({
+                                title: "Enrollment Required",
+                                description: "Please enroll in this course to take Daily Practice Problems.",
+                                variant: "destructive"
+                              });
+                              return;
+                            }
+                            toast({ title: "Starting Quiz", description: "Quiz features coming soon!" });
+                          }}
+                          className="gap-1.5"
+                        >
+                          {!canAccess ? (
+                            <>
+                              <Lock className="w-3.5 h-3.5" />
+                              Locked
+                            </>
+                          ) : (
+                            'Start Practice'
+                          )}
+                        </Button>
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-foreground">{dpp.title}</h3>
-                        <p className="text-sm text-muted-foreground">{dpp.description || "Practice questions"}</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={() => {
-                      if (!enrolled && !dpp.is_free) {
-                        toast({ title: "Enrollment Required", variant: "destructive" });
-                        return;
-                      }
-                      toast({ title: "Starting Quiz", description: "Quiz features coming soon!" });
-                    }}>
-                      Start Practice
-                    </Button>
-                  </div>))}
+                    );
+                  })}
                 </div>) : (<div className="text-center py-20 bg-card rounded-2xl border border-dashed border-border">
                   <HelpCircle className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                   <h3 className="text-lg font-semibold mb-2">No DPPs available</h3>

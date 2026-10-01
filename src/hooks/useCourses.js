@@ -13,17 +13,45 @@ export const useCourses = () => {
             setLoading(false);
             return;
         }
-        const { data, error } = await supabase
-            .from('user_courses')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('enrolled_at', { ascending: false });
-        if (error) {
-            console.error('Error fetching enrolled courses:', error);
-            return;
+        try {
+            const [enrollRes, purchaseRes, freeCoursesRes] = await Promise.all([
+                supabase
+                    .from('user_courses')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .order('enrolled_at', { ascending: false }),
+                supabase
+                    .from('purchases')
+                    .select('course_id')
+                    .eq('user_id', user.id)
+                    .eq('status', 'completed')
+                    .not('course_id', 'is', null),
+                supabase
+                    .from('courses')
+                    .select('id')
+                    .or('price.eq.0,price.is.null')
+            ]);
+
+            if (enrollRes.error) {
+                console.error('Error fetching enrolled courses:', enrollRes.error);
+                return;
+            }
+
+            const userCourses = enrollRes.data || [];
+            const purchasedCourseIds = new Set((purchaseRes.data || []).map(p => p.course_id));
+            const freeCourseIds = new Set((freeCoursesRes.data || []).map(c => c.id));
+
+            // Legitimate enrollments: either paid in purchases or truly free
+            const validEnrollments = userCourses.filter(uc =>
+                purchasedCourseIds.has(uc.course_id) || freeCourseIds.has(uc.course_id)
+            );
+
+            setEnrolledCourses(validEnrollments);
+        } catch (err) {
+            console.error('Error verifying course enrollments:', err);
+        } finally {
+            setLoading(false);
         }
-        setEnrolledCourses(data || []);
-        setLoading(false);
     };
     useEffect(() => {
         fetchEnrolledCourses();
@@ -57,13 +85,44 @@ export const useCourses = () => {
             });
             return { success: false };
         }
+
+        // Fetch course info to check price
+        const { data: courseData } = await supabase
+            .from('courses')
+            .select('price, title')
+            .eq('id', courseId)
+            .maybeSingle();
+
+        const isPaid = courseData && Number(courseData.price) > 0;
+
+        if (isPaid) {
+            // Check that a real completed purchase exists
+            const { data: purchaseData } = await supabase
+                .from('purchases')
+                .select('id')
+                .eq('user_id', user.id)
+                .eq('course_id', courseId)
+                .eq('status', 'completed')
+                .maybeSingle();
+
+            if (!purchaseData) {
+                toast({
+                    title: 'Payment required',
+                    description: 'Please complete payment to access this course.',
+                    variant: 'destructive',
+                });
+                return { success: false };
+            }
+        }
+
         const { error } = await supabase
             .from('user_courses')
             .insert({
-            user_id: user.id,
-            course_id: courseId,
-            progress: 0,
-        });
+                user_id: user.id,
+                course_id: courseId,
+                progress: 0,
+            });
+
         if (error) {
             console.error('Error enrolling in course:', error);
             toast({
@@ -73,25 +132,29 @@ export const useCourses = () => {
             });
             return { success: false };
         }
-        // Ensure a purchase record exists so it shows in "My Store"
-        // We check first to avoid duplicate records if CheckoutModal already handled it
-        const { data: existingPurchase } = await supabase
-            .from('purchases')
-            .select('id')
-            .eq('user_id', user.id)
-            .eq('course_id', courseId)
-            .maybeSingle();
-        if (!existingPurchase) {
-            await supabase.from('purchases').insert({
-                user_id: user.id,
-                course_id: courseId,
-                amount: 0, // Fallback for free/direct enrollment
-                status: 'completed',
-                order_id: `ENR_${Date.now()}_${Math.random().toString(36).substring(7)}`,
-                payment_id: 'direct_enroll',
-                paid_at: new Date().toISOString()
-            });
+
+        // Only for genuinely free courses (price == 0), record a free purchase if missing
+        if (!isPaid) {
+            const { data: existingPurchase } = await supabase
+                .from('purchases')
+                .select('id')
+                .eq('user_id', user.id)
+                .eq('course_id', courseId)
+                .maybeSingle();
+
+            if (!existingPurchase) {
+                await supabase.from('purchases').insert({
+                    user_id: user.id,
+                    course_id: courseId,
+                    amount: 0,
+                    status: 'completed',
+                    order_id: `FREE_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+                    payment_id: 'free_enroll',
+                    paid_at: new Date().toISOString()
+                });
+            }
         }
+
         toast({
             title: 'Enrolled successfully!',
             description: 'You can now access this course.',
