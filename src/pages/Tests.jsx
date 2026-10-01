@@ -207,7 +207,7 @@ const Tests = () => {
 
     const isCategoryPurchased = categoryPurchases?.some(
       (cp) =>
-        cp.category === categoryName &&
+        cp.category?.toLowerCase().trim() === categoryName?.toLowerCase().trim() &&
         (cp.content_type === 'tests' || cp.content_type === 'notes' || cp.content_type === 'both')
     );
     if (isCategoryPurchased) return true;

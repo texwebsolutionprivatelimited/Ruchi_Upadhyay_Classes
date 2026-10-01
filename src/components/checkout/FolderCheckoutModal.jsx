@@ -116,7 +116,9 @@ export const FolderCheckoutModal = ({
         });
       }
 
-      const { error: purchaseError } = await supabase.from('category_purchases').insert(purchaseRecords);
+      const { error: purchaseError } = await supabase
+        .from('category_purchases')
+        .upsert(purchaseRecords, { onConflict: 'user_id,category,content_type' });
 
       if (purchaseError) {
         throw purchaseError;

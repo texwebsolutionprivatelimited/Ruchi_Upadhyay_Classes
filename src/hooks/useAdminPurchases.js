@@ -16,13 +16,21 @@ export const useAdminPurchases = () => {
       const profileMap = new Map((profiles || []).map((p) => [p.user_id, p]));
 
       // 2. Query real purchases from 'purchases' table
-      const { data: purchasesData, error: purchasesError } = await supabase
+      let purchasesData = [];
+      const { data: pData, error: purchasesError } = await supabase
         .from('purchases')
         .select('*, course:courses(title, price, category), test:tests(title, price, category), note:notes(title, price, category)')
         .order('created_at', { ascending: false });
 
       if (purchasesError) {
-        console.warn('Error fetching purchases table:', purchasesError.message);
+        console.warn('Error fetching purchases table with joins, falling back to simple select:', purchasesError.message);
+        const { data: fallbackData } = await supabase
+          .from('purchases')
+          .select('*')
+          .order('created_at', { ascending: false });
+        purchasesData = fallbackData || [];
+      } else {
+        purchasesData = pData || [];
       }
 
       // 3. Query real category purchases from 'category_purchases' table
@@ -48,18 +56,18 @@ export const useAdminPurchases = () => {
         let itemTitle = 'Course Enrollment';
         let category = 'Academic';
 
-        if (p.course) {
-          itemType = 'Course';
-          itemTitle = p.course.title;
-          category = p.course.category || 'Courses';
-        } else if (p.note) {
-          itemType = 'Notes';
-          itemTitle = p.note.title;
-          category = p.note.category || 'Notes';
-        } else if (p.test) {
+        if (p.test || p.test_id) {
           itemType = 'Test Series';
-          itemTitle = p.test.title;
-          category = p.test.category || 'Tests';
+          itemTitle = p.test?.title || 'Test Series Assessment';
+          category = p.test?.category || 'Tests';
+        } else if (p.note || p.note_id) {
+          itemType = 'Notes';
+          itemTitle = p.note?.title || 'Study Material';
+          category = p.note?.category || 'Notes';
+        } else if (p.course || p.course_id) {
+          itemType = 'Course';
+          itemTitle = p.course?.title || 'Course Enrollment';
+          category = p.course?.category || 'Courses';
         }
 
         const orderId = p.order_id || `ORD_${p.id}`;

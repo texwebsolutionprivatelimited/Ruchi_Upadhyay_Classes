@@ -32,6 +32,7 @@ import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { downloadInvoicePdf } from '@/utils/generateInvoicePdf';
 import { useHasCourses } from '@/hooks/useAdmin';
+import { defaultChapterTests } from '@/data/chapterTests';
 import { toast } from 'sonner';
 
 const PurchaseHistory = () => {
@@ -56,31 +57,82 @@ const PurchaseHistory = () => {
       try {
         setLoading(true);
 
-        // 1. Fetch individual purchases (Courses, single Tests, single Notes)
-        const { data: purchasesData, error: purchaseError } = await supabase
-          .from("purchases")
-          .select("*, course:courses(title, image_url, instructor, category), test:tests(title, description, category), note:notes(title, content, file_url, category)")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false });
+        // 1. Fetch category/folder package purchases (Notes Folders, Test Series Bundles)
+        let categoryData = [];
+        try {
+          const { data: catData, error: catError } = await supabase
+            .from("category_purchases")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false });
 
-        if (purchaseError) throw purchaseError;
-
-        // 2. Fetch category/folder package purchases (Notes Folders, Test Series Bundles)
-        const { data: categoryData, error: catError } = await supabase
-          .from("category_purchases")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false });
-
-        if (catError) {
-          console.warn("Could not fetch category purchases:", catError.message);
+          if (catError) {
+            console.warn("Could not fetch category purchases:", catError.message);
+          } else {
+            categoryData = catData || [];
+          }
+        } catch (catErr) {
+          console.warn("Error fetching category purchases:", catErr);
         }
 
-        // 3. Normalize and combine real purchased items
+        // 2. Fetch individual purchases (Courses, single Tests, single Notes)
+        let purchasesData = [];
+        try {
+          const { data: pData, error: pError } = await supabase
+            .from("purchases")
+            .select("*, course:courses(title, image_url, instructor, category), test:tests(title, description, category), note:notes(title, content, file_url, category)")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false });
+
+          if (pError) {
+            console.warn("Rich purchases join failed, falling back to basic query:", pError.message);
+            const { data: fallbackData } = await supabase
+              .from("purchases")
+              .select("*")
+              .eq("user_id", user.id)
+              .order("created_at", { ascending: false });
+            purchasesData = fallbackData || [];
+          } else {
+            purchasesData = pData || [];
+          }
+        } catch (pErr) {
+          console.warn("Error fetching individual purchases:", pErr);
+        }
+
+        // 3. Build lookup maps for tests, notes, and courses to guarantee proper titles & metadata
+        const testsLookup = new Map();
+        (defaultChapterTests || []).forEach((dt) => {
+          if (dt?.id) testsLookup.set(dt.id, dt);
+        });
+
+        try {
+          const { data: dbTests } = await supabase.from('tests').select('id, title, description, category');
+          (dbTests || []).forEach((t) => {
+            if (t?.id) testsLookup.set(t.id, t);
+          });
+        } catch (e) {}
+
+        const notesLookup = new Map();
+        try {
+          const { data: dbNotes } = await supabase.from('notes').select('id, title, content, file_url, category');
+          (dbNotes || []).forEach((n) => {
+            if (n?.id) notesLookup.set(n.id, n);
+          });
+        } catch (e) {}
+
+        const coursesLookup = new Map();
+        try {
+          const { data: dbCourses } = await supabase.from('courses').select('id, title, image_url, instructor, category');
+          (dbCourses || []).forEach((c) => {
+            if (c?.id) coursesLookup.set(c.id, c);
+          });
+        } catch (e) {}
+
+        // 4. Normalize and combine real purchased items
         const unifiedList = [];
         const seenKeys = new Set();
 
-        // Add standard purchases
+        // Add standard individual purchases
         (purchasesData || []).forEach((p) => {
           let type = 'Course';
           let title = 'Study Item';
@@ -89,77 +141,116 @@ const PurchaseHistory = () => {
           let fileUrl = null;
           let category = 'Academic';
 
-          if (p.course) {
-            type = 'Course';
-            title = p.course.title;
-            description = p.course.instructor ? `By ${p.course.instructor}` : 'Comprehensive Course';
-            image = p.course.image_url;
-            category = p.course.category || 'Courses';
-          } else if (p.note) {
-            type = 'Notes';
-            title = p.note.title;
-            description = p.note.content || 'Study Material & Revision PDF';
-            fileUrl = p.note.file_url;
-            category = p.note.category || 'Notes';
-          } else if (p.test) {
+          if (p.test || p.test_id) {
             type = 'Test Series';
-            title = p.test.title;
-            description = p.test.description || 'Practice Assessment & Solutions';
-            category = p.test.category || 'Tests';
+            const testInfo = p.test || testsLookup.get(p.test_id);
+            title = testInfo?.title || 'Test Series Assessment';
+            description = testInfo?.description || 'Practice Assessment & Solutions';
+            category = testInfo?.category || 'Tests';
+          } else if (p.note || p.note_id) {
+            type = 'Notes';
+            const noteInfo = p.note || notesLookup.get(p.note_id);
+            title = noteInfo?.title || 'Study Material';
+            description = noteInfo?.content || 'Study Material & Revision PDF';
+            fileUrl = noteInfo?.file_url;
+            category = noteInfo?.category || 'Notes';
+          } else if (p.course || p.course_id) {
+            type = 'Course';
+            const courseInfo = p.course || coursesLookup.get(p.course_id);
+            title = courseInfo?.title || 'Comprehensive Course';
+            description = courseInfo?.instructor ? `By ${courseInfo.instructor}` : 'Comprehensive Course';
+            image = courseInfo?.image_url;
+            category = courseInfo?.category || 'Courses';
           }
 
-          const uniqueKey = `${p.id || p.order_id}`;
-          seenKeys.add(uniqueKey);
-
-          unifiedList.push({
-            id: p.id,
-            uniqueKey,
-            type,
-            title,
-            description,
-            image,
-            fileUrl,
-            category,
-            amount: Number(p.amount || 0),
-            orderId: p.order_id || `ORD_${p.id}`,
-            paymentId: p.payment_id || 'online_payment',
-            status: p.status || 'completed',
-            createdAt: p.created_at || new Date().toISOString(),
-            pointsDiscount: Number(p.points_discount || 0),
-            raw: p,
-          });
+          const uniqueKey = `p_${p.id || p.order_id}`;
+          if (!seenKeys.has(uniqueKey)) {
+            seenKeys.add(uniqueKey);
+            unifiedList.push({
+              id: p.id,
+              uniqueKey,
+              type,
+              title,
+              description,
+              image,
+              fileUrl,
+              category,
+              amount: Number(p.amount || 0),
+              orderId: p.order_id || `ORD_${p.id}`,
+              paymentId: p.payment_id || 'online_payment',
+              status: p.status || 'completed',
+              createdAt: p.created_at || new Date().toISOString(),
+              pointsDiscount: Number(p.points_discount || 0),
+              raw: p,
+            });
+          }
         });
 
         // Add category / folder purchases (Notes Folders and Test Series Folders)
         (categoryData || []).forEach((cp) => {
-          const isNotes = (cp.content_type || 'notes') === 'notes';
-          const type = isNotes ? 'Notes' : 'Test Series';
-          const title = `${cp.category} ${isNotes ? 'Complete Notes Pack' : 'Full Test Series'}`;
-          const description = isNotes
-            ? `Complete folder of high-yield revision PDF notes for ${cp.category}`
-            : `All chapter-wise mock tests and practice question banks for ${cp.category}`;
-          const uniqueKey = `cat_${cp.id || cp.order_id}`;
+          const contentType = (cp.content_type || 'notes').toLowerCase();
+          const isTests = contentType === 'tests';
+          const isBoth = contentType === 'both';
+          const isNotes = contentType === 'notes' || isBoth;
 
-          if (!seenKeys.has(uniqueKey)) {
-            seenKeys.add(uniqueKey);
-            unifiedList.push({
-              id: cp.id,
-              uniqueKey,
-              type,
-              isCategoryBundle: true,
-              categoryName: cp.category,
-              title,
-              description,
-              image: null,
-              category: cp.category,
-              amount: Number(cp.amount || 0),
-              orderId: cp.order_id || `CAT_${cp.id}`,
-              paymentId: cp.payment_id || 'online_payment',
-              status: cp.status || 'completed',
-              createdAt: cp.created_at || new Date().toISOString(),
-              pointsDiscount: 0,
-              raw: cp,
-            });
+          // If tests or both, add Test Series card
+          if (isTests || isBoth) {
+            const type = 'Test Series';
+            const title = `${cp.category} Full Test Series`;
+            const description = `All chapter-wise mock tests and practice question banks for ${cp.category}`;
+            const uniqueKey = `cat_tests_${cp.id || cp.order_id}`;
+
+            if (!seenKeys.has(uniqueKey)) {
+              seenKeys.add(uniqueKey);
+              unifiedList.push({
+                id: cp.id,
+                uniqueKey,
+                type,
+                isCategoryBundle: true,
+                categoryName: cp.category,
+                title,
+                description,
+                image: null,
+                category: cp.category,
+                amount: Number(cp.amount || 0),
+                orderId: cp.order_id || `CAT_${cp.id}`,
+                paymentId: cp.payment_id || 'online_payment',
+                status: cp.status || 'completed',
+                createdAt: cp.created_at || new Date().toISOString(),
+                pointsDiscount: 0,
+                raw: cp,
+              });
+            }
+          }
+
+          // If notes or both, add Notes card
+          if (isNotes) {
+            const type = 'Notes';
+            const title = `${cp.category} Complete Notes Pack`;
+            const description = `Complete folder of high-yield revision PDF notes for ${cp.category}`;
+            const uniqueKey = `cat_notes_${cp.id || cp.order_id}`;
+
+            if (!seenKeys.has(uniqueKey)) {
+              seenKeys.add(uniqueKey);
+              unifiedList.push({
+                id: cp.id,
+                uniqueKey,
+                type,
+                isCategoryBundle: true,
+                categoryName: cp.category,
+                title,
+                description,
+                image: null,
+                category: cp.category,
+                amount: isBoth ? 0 : Number(cp.amount || 0),
+                orderId: cp.order_id || `CAT_${cp.id}`,
+                paymentId: cp.payment_id || 'online_payment',
+                status: cp.status || 'completed',
+                createdAt: cp.created_at || new Date().toISOString(),
+                pointsDiscount: 0,
+                raw: cp,
+              });
+            }
           }
         });
 
@@ -257,10 +348,14 @@ const PurchaseHistory = () => {
       );
     } else if (purchase.type === 'Test Series') {
       Icon = CheckSquare;
+      const targetCategory = purchase.categoryName || purchase.category;
+      const targetSlug = targetCategory
+        ? targetCategory.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+        : '';
       action = (
         <Button
           size="sm"
-          onClick={() => navigate('/tests')}
+          onClick={() => navigate(targetSlug ? `/tests/${targetSlug}` : '/tests')}
           className="rounded-xl bg-accent text-accent-foreground hover:bg-accent/90 text-xs font-bold gap-1.5 shadow-sm"
         >
           <Play className="w-3.5 h-3.5" /> Attempt Tests
