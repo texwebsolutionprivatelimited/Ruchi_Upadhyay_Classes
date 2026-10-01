@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Search, ArrowLeft, Users, BookOpen, Star, Filter } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
@@ -14,11 +14,19 @@ const levels = ['All Levels', 'Beginner', 'Intermediate', 'Advanced'];
 
 const CategoryCourses = () => {
   const { category } = useParams();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLevel, setSelectedLevel] = useState('All Levels');
 
   const { data: categories } = useCategories();
   const { data: allCourses, isLoading: coursesLoading } = usePublicCourses();
+
+  // If no courses exist on the platform yet, redirect to this category notes
+  useEffect(() => {
+    if (!coursesLoading && allCourses && allCourses.length === 0) {
+      navigate(category ? `/notes/${category}` : '/notes', { replace: true });
+    }
+  }, [coursesLoading, allCourses, category, navigate]);
 
   const categoryInfo = categories?.find((c) => c.slug === category);
 
@@ -29,8 +37,8 @@ const CategoryCourses = () => {
         <h1 className="text-2xl font-bold text-foreground mb-4">
           {coursesLoading ? 'Loading...' : 'Category Not Found'}
         </h1>
-        <Link to="/courses">
-          <Button>Back to Courses</Button>
+        <Link to="/notes">
+          <Button>Browse Study Notes</Button>
         </Link>
       </div>
       <Footer />
@@ -60,10 +68,10 @@ const CategoryCourses = () => {
     <section className={`pt-24 pb-16 bg-gradient-to-br ${categoryInfo.gradient}`}>
       <div className="container mx-auto px-4">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center space-y-6">
-          <Link to="/courses">
+          <Link to="/notes">
             <Button variant="outline" size="sm" className="text-white hover:bg-white/10 border-white/20 bg-white/5 backdrop-blur-sm shadow-sm transition-all rounded-xl mb-4">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              All Courses
+              All Study Notes
             </Button>
           </Link>
 

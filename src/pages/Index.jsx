@@ -17,8 +17,10 @@ import { Button } from '@/components/ui/button';
 import Counter from '@/components/home/Counter';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useHasCourses } from '@/hooks/useAdmin';
 
 const Index = () => {
+  const { data: hasCourses } = useHasCourses();
   const { data: courses, isLoading: coursesLoading } = useQuery({
     queryKey: ['featured-courses'],
     queryFn: async () => {
@@ -245,9 +247,9 @@ const Index = () => {
               Join thousands of students who are acing their exams with Ruchi Upadhyay Classes
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Link to="/courses">
+              <Link to={hasCourses ? "/courses" : "/notes"}>
                 <Button variant="hero" size="xl">
-                  Get Started Free
+                  {hasCourses ? "Get Started Free" : "Explore Notes & Tests"}
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>

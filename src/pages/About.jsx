@@ -475,9 +475,9 @@ const About = () => {
                 Join thousands of successful students and experience the difference of learning with Dr. Ruchi Upadhyay
               </p>
               <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 md:gap-4 px-4">
-                <Link to="/courses" className="w-full sm:w-auto">
+                <Link to={hasCourses ? "/courses" : "/notes"} className="w-full sm:w-auto">
                   <Button size="lg" className="w-full sm:w-auto h-12 md:h-14">
-                    Explore Courses
+                    {hasCourses ? "Explore Courses" : "Explore Notes"}
                   </Button>
                 </Link>
                 <Link to="/contact" className="w-full sm:w-auto">

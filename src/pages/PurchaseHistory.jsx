@@ -31,11 +31,13 @@ import {
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { downloadInvoicePdf } from '@/utils/generateInvoicePdf';
+import { useHasCourses } from '@/hooks/useAdmin';
 import { toast } from 'sonner';
 
 const PurchaseHistory = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const { data: hasCourses } = useHasCourses();
   const [purchases, setPurchases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -476,16 +478,18 @@ const PurchaseHistory = () => {
                 >
                   All ({purchases.length})
                 </button>
-                <button
-                  onClick={() => setActiveFilter('courses')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    activeFilter === 'courses'
-                      ? 'bg-card text-foreground shadow-xs'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  Courses ({purchases.filter((p) => p.type === 'Course').length})
-                </button>
+                {hasCourses && (
+                  <button
+                    onClick={() => setActiveFilter('courses')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      activeFilter === 'courses'
+                        ? 'bg-card text-foreground shadow-xs'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Courses ({purchases.filter((p) => p.type === 'Course').length})
+                  </button>
+                )}
                 <button
                   onClick={() => setActiveFilter('notes')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
@@ -543,24 +547,35 @@ const PurchaseHistory = () => {
                     </div>
                     <h3 className="text-xl md:text-2xl font-bold mb-2">No purchases yet</h3>
                     <p className="text-muted-foreground mb-6 max-w-sm mx-auto text-xs sm:text-sm">
-                      Start your learning journey by exploring our premium courses, downloadable
-                      notes, and test series.
+                      {hasCourses
+                        ? "Start your learning journey by exploring our premium courses, downloadable notes, and test series."
+                        : "Start your learning journey by exploring our downloadable notes folders and test series."}
                     </p>
                     <div className="flex flex-wrap gap-3 justify-center">
+                      {hasCourses && (
+                        <Button
+                          size="default"
+                          className="gradient-primary px-6 font-bold shadow-md rounded-xl"
+                          onClick={() => navigate("/courses")}
+                        >
+                          Browse Courses
+                        </Button>
+                      )}
                       <Button
+                        variant={hasCourses ? "outline" : "default"}
                         size="default"
-                        className="gradient-primary px-6 font-bold shadow-md rounded-xl"
-                        onClick={() => navigate("/courses")}
+                        className={`${!hasCourses ? "gradient-primary shadow-md" : ""} px-6 font-bold rounded-xl`}
+                        onClick={() => navigate("/notes")}
                       >
-                        Browse Courses
+                        Browse Notes
                       </Button>
                       <Button
                         variant="outline"
                         size="default"
                         className="px-6 font-bold rounded-xl"
-                        onClick={() => navigate("/notes")}
+                        onClick={() => navigate("/tests")}
                       >
-                        Browse Notes
+                        Browse Tests
                       </Button>
                     </div>
                   </CardContent>

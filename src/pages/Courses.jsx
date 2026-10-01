@@ -88,8 +88,21 @@ const Courses = () => {
       supabase.removeChannel(channel);
     };
   }, []);
-  return (<div className="min-h-screen bg-background">
-    <Navbar />
+
+  // Redirect direct link visitors to /notes if admin hasn't added any course yet
+  useEffect(() => {
+    if (!isLoading && courses.length === 0) {
+      navigate('/notes', { replace: true });
+    }
+  }, [isLoading, courses.length, navigate]);
+
+  if (!isLoading && courses.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Navbar />
 
     <main className="pt-20 md:pt-24 pb-16">
       {/* Hero Section */}

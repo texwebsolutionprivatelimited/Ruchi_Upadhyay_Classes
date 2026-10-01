@@ -120,7 +120,10 @@ const CourseDetails = () => {
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Course Not Found</h1>
           <p className="text-muted-foreground mb-4">The course you're looking for doesn't exist.</p>
-          <Button onClick={() => navigate('/courses')}>Browse Courses</Button>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Button onClick={() => navigate('/notes')}>Browse Study Notes</Button>
+            <Button variant="outline" onClick={() => navigate('/')}>Go to Home</Button>
+          </div>
         </div>
       </div>
       <Footer />
