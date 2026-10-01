@@ -211,13 +211,13 @@ const PurchaseHistory = () => {
   }, [filteredPurchases, currentPage, pageSize]);
 
   // Download official receipt / invoice PDF
-  const handleDownloadInvoice = (item) => {
+  const handleDownloadInvoice = async (item) => {
     try {
       setDownloadingId(item.uniqueKey);
       const studentName =
         user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Student';
 
-      downloadInvoicePdf({
+      await downloadInvoicePdf({
         orderId: item.orderId,
         paymentId: item.paymentId,
         studentName,
@@ -297,7 +297,7 @@ const PurchaseHistory = () => {
         <CardContent className="p-0">
           <div className="flex flex-col md:flex-row">
             {/* Visual Thumbnail / Icon Box */}
-            <div className="w-full md:w-52 h-44 md:h-auto relative overflow-hidden bg-secondary/30 flex items-center justify-center">
+            <div className="w-full md:w-52 h-36 sm:h-44 md:h-auto relative overflow-hidden bg-secondary/30 flex items-center justify-center">
               {purchase.image ? (
                 <img
                   src={purchase.image}
@@ -306,7 +306,7 @@ const PurchaseHistory = () => {
                 />
               ) : (
                 <div
-                  className={`w-full h-full flex flex-col items-center justify-center p-4 text-center ${
+                  className={`w-full h-full flex flex-col items-center justify-center p-3 sm:p-4 text-center ${
                     purchase.type === 'Course'
                       ? 'bg-primary/10 text-primary'
                       : purchase.type === 'Test Series'
@@ -314,15 +314,15 @@ const PurchaseHistory = () => {
                       : 'bg-emerald-500/10 text-emerald-600'
                   }`}
                 >
-                  <Icon className="w-12 h-12 mb-2" />
-                  <span className="text-xs font-bold">{purchase.category}</span>
+                  <Icon className="w-10 h-10 sm:w-12 sm:h-12 mb-1.5 sm:mb-2" />
+                  <span className="text-[11px] sm:text-xs font-bold">{purchase.category}</span>
                 </div>
               )}
 
-              <div className="absolute top-3 left-3">
+              <div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3">
                 <Badge
                   variant="secondary"
-                  className="backdrop-blur-md bg-background/90 border-border/50 font-bold uppercase tracking-wider text-[10px]"
+                  className="backdrop-blur-md bg-background/90 border-border/50 font-bold uppercase tracking-wider text-[9px] sm:text-[10px]"
                 >
                   {purchase.type}
                 </Badge>
@@ -330,20 +330,20 @@ const PurchaseHistory = () => {
             </div>
 
             {/* Content Details */}
-            <div className="flex-1 p-5 md:p-6 flex flex-col justify-between">
-              <div className="space-y-2">
-                <div className="flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-4">
-                  <div>
-                    <h3 className="font-heading font-bold text-base sm:text-lg group-hover:text-primary transition-colors line-clamp-1">
+            <div className="flex-1 p-3.5 sm:p-5 md:p-6 flex flex-col justify-between">
+              <div className="space-y-1.5 sm:space-y-2">
+                <div className="flex flex-col xs:flex-row justify-between items-start gap-1.5 xs:gap-3 sm:gap-4">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-heading font-bold text-sm sm:text-base md:text-lg group-hover:text-primary transition-colors line-clamp-1">
                       {purchase.title}
                     </h3>
-                    <p className="text-xs text-muted-foreground line-clamp-2 mt-1 leading-relaxed">
+                    <p className="text-[11px] sm:text-xs text-muted-foreground line-clamp-2 mt-0.5 sm:mt-1 leading-relaxed">
                       {purchase.description}
                     </p>
                   </div>
 
-                  <div className="text-left sm:text-right shrink-0">
-                    <p className="text-lg sm:text-xl font-black text-foreground">
+                  <div className="text-left xs:text-right shrink-0">
+                    <p className="text-base sm:text-xl font-black text-foreground">
                       ₹{purchase.amount}
                     </p>
                     <p className="text-[10px] text-muted-foreground font-semibold">
@@ -352,48 +352,50 @@ const PurchaseHistory = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 pt-1">
+                <div className="flex items-center gap-2 pt-0.5">
                   <Badge
                     variant="outline"
-                    className="text-[10px] font-mono text-muted-foreground bg-secondary/30"
+                    className="text-[9px] sm:text-[10px] font-mono text-muted-foreground bg-secondary/30 truncate max-w-[200px]"
                   >
-                    Order: {purchase.orderId}
+                    Order: #{purchase.orderId?.slice(-10) || purchase.orderId}
                   </Badge>
                 </div>
               </div>
 
               {/* Action Buttons & Status */}
-              <div className="mt-5 pt-4 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
+              <div className="mt-3.5 sm:mt-5 pt-3 sm:pt-4 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3">
+                <div className="flex items-center justify-between sm:justify-start gap-2">
                   <Badge
                     variant="secondary"
-                    className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-[10px] font-semibold"
+                    className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-[9px] sm:text-[10px] font-semibold"
                   >
-                    <CheckCircle className="w-3 h-3 mr-1" />
+                    <CheckCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1" />
                     {purchase.status === 'completed' ? 'Active Access' : purchase.status}
                   </Badge>
                   <span className="text-[10px] text-muted-foreground flex items-center gap-1 font-medium">
-                    <Clock className="w-3 h-3" />
+                    <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                     {format(new Date(purchase.createdAt), "hh:mm a")}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2 w-full sm:w-auto">
+                <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-2 w-full sm:w-auto">
                   {/* Download Official Receipt / Invoice Button */}
                   <Button
                     variant="outline"
                     size="sm"
                     disabled={downloadingId === purchase.uniqueKey}
                     onClick={() => handleDownloadInvoice(purchase)}
-                    className="rounded-xl border-border hover:border-primary hover:bg-primary/5 text-xs font-bold gap-1.5 h-9"
+                    className="rounded-xl border-border hover:border-primary hover:bg-primary/5 text-xs font-bold gap-1.5 h-8 sm:h-9 flex-1 sm:flex-initial"
                     title="Download Official Tax Receipt / Payment Invoice (PDF)"
                   >
                     <Receipt className="w-3.5 h-3.5 text-primary" />
-                    Download Invoice
+                    <span className="truncate">Download Invoice</span>
                   </Button>
 
                   {/* Primary Resource Action */}
-                  {action}
+                  <div className="flex-1 sm:flex-initial [&>button]:w-full [&>button]:h-8 [&>button]:sm:h-9 [&>button]:text-xs">
+                    {action}
+                  </div>
                 </div>
               </div>
             </div>
@@ -435,28 +437,28 @@ const PurchaseHistory = () => {
         <section className="container mx-auto px-4 max-w-4xl">
           {/* Quick Metrics Bar */}
           {!loading && purchases.length > 0 && (
-            <div className="grid grid-cols-3 gap-3 mb-6">
-              <div className="bg-card border border-border rounded-2xl p-3.5 sm:p-4 text-center shadow-xs">
-                <p className="text-[10px] sm:text-xs text-muted-foreground uppercase font-bold tracking-wider">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4 sm:mb-6">
+              <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-2.5 sm:p-4 text-center shadow-xs">
+                <p className="text-[9px] sm:text-xs text-muted-foreground uppercase font-bold tracking-wider truncate">
                   Total Items
                 </p>
-                <p className="text-xl sm:text-2xl font-black text-foreground mt-0.5">
+                <p className="text-base sm:text-2xl font-black text-foreground mt-0.5">
                   {purchases.length}
                 </p>
               </div>
-              <div className="bg-card border border-border rounded-2xl p-3.5 sm:p-4 text-center shadow-xs">
-                <p className="text-[10px] sm:text-xs text-muted-foreground uppercase font-bold tracking-wider">
+              <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-2.5 sm:p-4 text-center shadow-xs">
+                <p className="text-[9px] sm:text-xs text-muted-foreground uppercase font-bold tracking-wider truncate">
                   Courses & Packs
                 </p>
-                <p className="text-xl sm:text-2xl font-black text-primary mt-0.5">
+                <p className="text-base sm:text-2xl font-black text-primary mt-0.5">
                   {purchases.filter((p) => p.type === 'Course').length}
                 </p>
               </div>
-              <div className="bg-card border border-border rounded-2xl p-3.5 sm:p-4 text-center shadow-xs">
-                <p className="text-[10px] sm:text-xs text-muted-foreground uppercase font-bold tracking-wider">
-                  Total Invested
+              <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-2.5 sm:p-4 text-center shadow-xs">
+                <p className="text-[9px] sm:text-xs text-muted-foreground uppercase font-bold tracking-wider truncate">
+                  Invested
                 </p>
-                <p className="text-xl sm:text-2xl font-black text-emerald-600 mt-0.5">
+                <p className="text-base sm:text-2xl font-black text-emerald-600 mt-0.5 truncate">
                   ₹{totalSpent}
                 </p>
               </div>
@@ -465,12 +467,12 @@ const PurchaseHistory = () => {
 
           {/* Search & Filter Tabs */}
           {!loading && purchases.length > 0 && (
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 mb-4 sm:mb-6">
               {/* Type Switcher Tabs */}
-              <div className="flex items-center gap-1 bg-secondary/50 p-1 rounded-xl overflow-x-auto">
+              <div className="flex items-center gap-1 bg-secondary/50 p-1 rounded-xl overflow-x-auto scrollbar-none">
                 <button
                   onClick={() => setActiveFilter('all')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${
                     activeFilter === 'all'
                       ? 'bg-card text-foreground shadow-xs'
                       : 'text-muted-foreground hover:text-foreground'
@@ -481,7 +483,7 @@ const PurchaseHistory = () => {
                 {hasCourses && (
                   <button
                     onClick={() => setActiveFilter('courses')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${
                       activeFilter === 'courses'
                         ? 'bg-card text-foreground shadow-xs'
                         : 'text-muted-foreground hover:text-foreground'
@@ -492,7 +494,7 @@ const PurchaseHistory = () => {
                 )}
                 <button
                   onClick={() => setActiveFilter('notes')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${
                     activeFilter === 'notes'
                       ? 'bg-card text-foreground shadow-xs'
                       : 'text-muted-foreground hover:text-foreground'
@@ -502,7 +504,7 @@ const PurchaseHistory = () => {
                 </button>
                 <button
                   onClick={() => setActiveFilter('tests')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${
                     activeFilter === 'tests'
                       ? 'bg-card text-foreground shadow-xs'
                       : 'text-muted-foreground hover:text-foreground'
@@ -519,7 +521,7 @@ const PurchaseHistory = () => {
                   placeholder="Search your library..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 text-xs h-9 rounded-xl"
+                  className="pl-9 text-xs h-9 rounded-xl w-full"
                 />
               </div>
             </div>
@@ -604,45 +606,52 @@ const PurchaseHistory = () => {
 
                 {/* Pagination Controls */}
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-between pt-4 border-t border-border text-xs text-muted-foreground">
+                  <div className="flex flex-col sm:flex-row items-center justify-between pt-4 border-t border-border text-xs text-muted-foreground gap-2.5">
                     <span>
                       Page <strong className="text-foreground">{currentPage}</strong> of{' '}
-                      <strong className="text-foreground">{totalPages}</strong> ({filteredPurchases.length} total items)
+                      <strong className="text-foreground">{totalPages}</strong> ({filteredPurchases.length} items)
                     </span>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1">
                       <Button
                         variant="outline"
                         size="sm"
                         disabled={currentPage === 1}
                         onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                        className="h-8 rounded-lg px-2.5 text-xs gap-1"
+                        className="h-8 rounded-lg px-2 sm:px-2.5 text-xs gap-1"
                       >
-                        <ChevronLeft className="w-3.5 h-3.5" /> Previous
+                        <ChevronLeft className="w-3.5 h-3.5" /> <span className="hidden xs:inline">Prev</span>
                       </Button>
 
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                        <Button
-                          key={page}
-                          variant={currentPage === page ? 'default' : 'outline'}
-                          size="sm"
-                          className={`h-8 w-8 p-0 rounded-lg text-xs font-bold ${
-                            currentPage === page ? 'bg-primary text-primary-foreground' : ''
-                          }`}
-                          onClick={() => setCurrentPage(page)}
-                        >
-                          {page}
-                        </Button>
-                      ))}
+                      {Array.from({ length: totalPages }, (_, i) => i + 1)
+                        .filter(page => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1)
+                        .map((page, index, array) => {
+                          const showEllipsis = index > 0 && page - array[index - 1] > 1;
+                          return (
+                            <div key={page} className="flex items-center">
+                              {showEllipsis && <span className="px-1 text-muted-foreground">...</span>}
+                              <Button
+                                variant={currentPage === page ? 'default' : 'outline'}
+                                size="sm"
+                                className={`h-8 w-8 p-0 rounded-lg text-xs font-bold ${
+                                  currentPage === page ? 'bg-primary text-primary-foreground' : ''
+                                }`}
+                                onClick={() => setCurrentPage(page)}
+                              >
+                                {page}
+                              </Button>
+                            </div>
+                          );
+                        })}
 
                       <Button
                         variant="outline"
                         size="sm"
                         disabled={currentPage === totalPages}
                         onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                        className="h-8 rounded-lg px-2.5 text-xs gap-1"
+                        className="h-8 rounded-lg px-2 sm:px-2.5 text-xs gap-1"
                       >
-                        Next <ChevronRight className="w-3.5 h-3.5" />
+                        <span className="hidden xs:inline">Next</span> <ChevronRight className="w-3.5 h-3.5" />
                       </Button>
                     </div>
                   </div>

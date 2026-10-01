@@ -55,7 +55,7 @@ const AdminUsers = () => {
   };
 
   const filteredUsers = users?.filter(user => {
-    const q = searchQuery.toLowerCase();
+    const q = searchQuery.toLowerCase().trim();
     const matchUsername = user.username?.toLowerCase().includes(q);
     const matchId = user.id?.toLowerCase().includes(q);
     const matchEmail = user.email?.toLowerCase().includes(q);
@@ -119,8 +119,8 @@ const AdminUsers = () => {
   const getRoleBadge = (user) => {
     if (isSuperAdmin(user)) {
       return (
-        <Badge className="bg-gradient-to-r from-amber-500 to-primary text-white border-none shadow-sm px-2.5 py-0.5 font-bold flex items-center gap-1">
-          <Crown className="w-3.5 h-3.5 fill-current" />
+        <Badge className="bg-gradient-to-r from-amber-500 to-primary text-white border-none shadow-xs px-2 py-0.5 text-[10px] sm:text-xs font-bold flex items-center gap-1 shrink-0">
+          <Crown className="w-3 h-3 fill-current shrink-0" />
           Super Admin
         </Badge>
       );
@@ -128,31 +128,31 @@ const AdminUsers = () => {
 
     if (user.role === 'moderator') {
       return (
-        <Badge className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 font-medium">
-          <ShieldCheck className="w-3 h-3 mr-1" />
+        <Badge className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 text-[10px] sm:text-xs font-medium shrink-0">
+          <ShieldCheck className="w-3 h-3 mr-1 shrink-0" />
           Moderator
         </Badge>
       );
     }
 
     return (
-      <Badge variant="secondary" className="font-normal">
-        <User className="w-3 h-3 mr-1" />
-        Student / User
+      <Badge variant="secondary" className="font-normal text-[10px] sm:text-xs shrink-0">
+        <User className="w-3 h-3 mr-1 shrink-0" />
+        Student
       </Badge>
     );
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 max-w-full overflow-hidden">
       {/* Header & Stats */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-card-foreground flex items-center gap-2">
-            User Management & Role Assignment
+          <h2 className="text-lg sm:text-xl font-bold tracking-tight text-card-foreground flex items-center gap-2">
+            User Management & Roles
           </h2>
-          <p className="text-sm text-muted-foreground">
-            Manage student roles, secure permissions, and handle user accounts.
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Manage student roles, secure permissions, and manage user accounts.
           </p>
         </div>
 
@@ -163,28 +163,28 @@ const AdminUsers = () => {
             placeholder="Search by name, ID, or email..." 
             value={searchQuery} 
             onChange={(e) => setSearchQuery(e.target.value)} 
-            className="pl-10 h-10 rounded-xl" 
+            className="pl-10 h-9 sm:h-10 text-xs rounded-xl w-full" 
           />
         </div>
       </div>
 
-      {/* Mini Stats Badges */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="px-3.5 py-1.5 rounded-xl bg-secondary/50 border border-border text-xs font-medium text-foreground">
+      {/* Mini Stats Badges - Optimized for small screens 320px+ */}
+      <div className="flex flex-wrap items-center gap-1.5 sm:gap-3">
+        <div className="px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl bg-secondary/50 border border-border text-[11px] sm:text-xs font-medium text-foreground">
           Total Users: <span className="font-bold text-primary ml-1">{totalUsersCount}</span>
         </div>
-        <div className="px-3.5 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs font-medium text-amber-600 dark:text-amber-400">
+        <div className="px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] sm:text-xs font-medium text-amber-600 dark:text-amber-400">
           Admins: <span className="font-bold ml-1">{adminCount}</span>
         </div>
         {blockedCount > 0 && (
-          <div className="px-3.5 py-1.5 rounded-xl bg-destructive/10 border border-destructive/20 text-xs font-medium text-destructive">
+          <div className="px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl bg-destructive/10 border border-destructive/20 text-[11px] sm:text-xs font-medium text-destructive">
             Blocked: <span className="font-bold ml-1">{blockedCount}</span>
           </div>
         )}
       </div>
 
       {/* Users Table / Cards Container */}
-      <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+      <div className="bg-card rounded-xl sm:rounded-2xl border border-border shadow-xs overflow-hidden">
         {/* Desktop Table View */}
         <div className="hidden lg:block overflow-x-auto">
           <table className="w-full">
@@ -381,17 +381,20 @@ const AdminUsers = () => {
           </table>
         </div>
 
-        {/* Mobile / Tablet Card View */}
-        <div className="lg:hidden divide-y divide-border">
+        {/* Mobile / Tablet Card View (Specially responsive on 320px, 375px, 425px) */}
+        <div className="block lg:hidden divide-y divide-border">
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">Loading users...</div>
+            <div className="p-8 text-center text-muted-foreground">
+              <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+              <span className="text-xs">Loading users...</span>
+            </div>
           ) : filteredUsers && filteredUsers.length > 0 ? (
             filteredUsers.map((user) => {
               const admin = isSuperAdmin(user);
               return (
                 <div 
                   key={user.id} 
-                  className={`p-4 space-y-3 transition-colors ${
+                  className={`p-3 sm:p-4 space-y-2.5 transition-colors ${
                     admin 
                       ? 'bg-amber-500/10 border-l-4 border-l-amber-500' 
                       : user.is_blocked 
@@ -400,46 +403,48 @@ const AdminUsers = () => {
                   }`}
                 >
                   {/* Top: Avatar, Name & Role */}
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <Avatar className={`w-11 h-11 ${admin ? 'ring-2 ring-amber-500 ring-offset-2 ring-offset-background' : ''}`}>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <Avatar className={`w-9 h-9 sm:w-11 sm:h-11 shrink-0 ${admin ? 'ring-2 ring-amber-500 ring-offset-2 ring-offset-background' : ''}`}>
                         <AvatarImage src={user.avatar_url || ''} />
                         <AvatarFallback className={admin ? "bg-amber-500 text-white font-bold" : "bg-primary/10 text-primary font-semibold"}>
                           {user.username?.charAt(0).toUpperCase() || 'U'}
                         </AvatarFallback>
                       </Avatar>
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <p className="font-bold text-card-foreground text-sm">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <p className="font-bold text-card-foreground text-xs sm:text-sm truncate max-w-[130px] xs:max-w-[180px]">
                             {user.username || 'Anonymous'}
                           </p>
                           {user.id === currentUser?.id && (
-                            <Badge variant="outline" className="text-[9px] py-0 px-1 bg-primary/10 text-primary">You</Badge>
+                            <Badge variant="outline" className="text-[9px] py-0 px-1 bg-primary/10 text-primary shrink-0">You</Badge>
                           )}
                         </div>
                         {user.email && (
-                          <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Mail className="w-3 h-3" /> {user.email}
+                          <p className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1 truncate max-w-[140px] xs:max-w-[200px]">
+                            <Mail className="w-2.5 h-2.5 shrink-0" /> <span className="truncate">{user.email}</span>
                           </p>
                         )}
-                        <p className="text-[11px] text-muted-foreground">
+                        <p className="text-[10px] text-muted-foreground">
                           Joined: {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
                         </p>
                       </div>
                     </div>
-                    {getRoleBadge(user)}
+                    <div className="shrink-0">
+                      {getRoleBadge(user)}
+                    </div>
                   </div>
 
                   {/* ID & Status */}
                   <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/50 text-xs">
                     <div>
                       {admin ? (
-                        <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/20 text-amber-700 dark:text-amber-300 font-mono text-[11px] font-bold">
-                          <Crown className="w-3 h-3 text-amber-500" />
+                        <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-700 dark:text-amber-300 font-mono text-[10px] sm:text-[11px] font-bold">
+                          <Crown className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-500 shrink-0" />
                           <span>ID: {user.id.substring(0, 8)}...</span>
                         </div>
                       ) : (
-                        <code className="text-[11px] bg-secondary px-2 py-0.5 rounded text-muted-foreground font-mono">
+                        <code className="text-[10px] bg-secondary px-1.5 py-0.5 rounded text-muted-foreground font-mono">
                           ID: {user.id.substring(0, 8)}...
                         </code>
                       )}
@@ -447,33 +452,33 @@ const AdminUsers = () => {
 
                     <div>
                       {user.is_blocked ? (
-                        <Badge variant="destructive" className="text-[10px] px-2 py-0.5">
-                          <Ban className="w-2.5 h-2.5 mr-1" /> Blocked
+                        <Badge variant="destructive" className="text-[9px] sm:text-[10px] px-1.5 py-0.5 font-bold">
+                          <Ban className="w-2.5 h-2.5 mr-0.5" /> Blocked
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="text-[10px] px-2 py-0.5 text-emerald-600 border-emerald-500/30">
+                        <Badge variant="outline" className="text-[9px] sm:text-[10px] px-1.5 py-0.5 text-emerald-600 border-emerald-500/30">
                           Active
                         </Badge>
                       )}
                     </div>
                   </div>
 
-                  {/* Actions for Mobile */}
-                  <div className="pt-2">
+                  {/* Actions for Mobile - Perfectly fits 320px screen */}
+                  <div className="pt-1">
                     {admin ? (
-                      <div className="flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs font-semibold">
-                        <Lock className="w-3.5 h-3.5 text-amber-500" />
+                      <div className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-[11px] font-semibold text-center w-full">
+                        <Lock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                         <span>Protected Admin (Role Locked)</span>
                       </div>
                     ) : (
-                      <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 w-full">
                         <Button 
                           variant="outline" 
                           size="sm" 
                           onClick={() => handleOpenRoleDialog(user)} 
-                          className="h-8 flex-1 text-xs font-semibold"
+                          className="h-7 sm:h-8 flex-1 text-[10px] sm:text-xs font-semibold px-1"
                         >
-                          <Shield className="w-3.5 h-3.5 mr-1 text-primary" /> Role
+                          <Shield className="w-3 h-3 mr-1 text-primary shrink-0" /> Role
                         </Button>
 
                         {user.is_blocked ? (
@@ -481,18 +486,18 @@ const AdminUsers = () => {
                             variant="outline"
                             size="sm"
                             onClick={() => setUserToToggleBlock(user)}
-                            className="h-8 flex-1 text-xs font-semibold text-emerald-600 border-emerald-300 dark:border-emerald-800"
+                            className="h-7 sm:h-8 flex-1 text-[10px] sm:text-xs font-semibold text-emerald-600 border-emerald-300 dark:border-emerald-800 px-1"
                           >
-                            <UserCheck className="w-3.5 h-3.5 mr-1" /> Unblock
+                            <UserCheck className="w-3 h-3 mr-1 shrink-0" /> Unblock
                           </Button>
                         ) : (
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => setUserToToggleBlock(user)}
-                            className="h-8 flex-1 text-xs font-semibold text-amber-600 border-amber-300 dark:border-amber-800"
+                            className="h-7 sm:h-8 flex-1 text-[10px] sm:text-xs font-semibold text-amber-600 border-amber-300 dark:border-amber-800 px-1"
                           >
-                            <Ban className="w-3.5 h-3.5 mr-1" /> Block
+                            <Ban className="w-3 h-3 mr-1 shrink-0" /> Block
                           </Button>
                         )}
 
@@ -500,10 +505,10 @@ const AdminUsers = () => {
                           variant="ghost" 
                           size="icon" 
                           onClick={() => setUserToDelete(user)}
-                          className="h-8 w-8 text-destructive hover:bg-destructive/15"
+                          className="h-7 w-7 sm:h-8 sm:w-8 text-destructive hover:bg-destructive/15 shrink-0 p-0"
                           title="Delete user"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </Button>
                       </div>
                     )}
@@ -512,67 +517,67 @@ const AdminUsers = () => {
               );
             })
           ) : (
-            <div className="p-8 text-center text-muted-foreground">No users found.</div>
+            <div className="p-8 text-center text-muted-foreground text-xs">No users found.</div>
           )}
         </div>
       </div>
 
       {/* 1. Assign Role Dialog */}
       <Dialog open={isRoleDialogOpen} onOpenChange={setIsRoleDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="w-[94vw] max-w-md p-4 sm:p-6 rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-primary" />
+            <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Shield className="w-5 h-5 text-primary shrink-0" />
               Assign Role
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-xs sm:text-sm">
               Assign elevated permissions to {selectedUser?.username || 'this user'}.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-2">
-            <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-xl border border-border">
-              <Avatar className="w-12 h-12">
+          <div className="space-y-3 sm:space-y-4 py-2">
+            <div className="flex items-center gap-2.5 p-2.5 sm:p-3 bg-secondary/50 rounded-xl border border-border">
+              <Avatar className="w-10 h-10 sm:w-12 sm:h-12 shrink-0">
                 <AvatarImage src={selectedUser?.avatar_url || ''} />
-                <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs sm:text-sm">
                   {selectedUser?.username?.charAt(0).toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
-              <div>
-                <p className="font-semibold text-foreground">{selectedUser?.username || 'Anonymous'}</p>
+              <div className="min-w-0">
+                <p className="font-semibold text-foreground text-xs sm:text-sm truncate">{selectedUser?.username || 'Anonymous'}</p>
                 {selectedUser?.email && (
-                  <p className="text-xs text-muted-foreground">{selectedUser.email}</p>
+                  <p className="text-[11px] text-muted-foreground truncate">{selectedUser.email}</p>
                 )}
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Current Role: <span className="font-semibold text-foreground uppercase">{selectedUser?.role || 'user'}</span>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">
+                  Current: <span className="font-semibold text-foreground uppercase">{selectedUser?.role || 'user'}</span>
                 </p>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <div className="space-y-1.5 sm:space-y-2">
+              <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                 Select New Role
               </label>
               <Select value={selectedRole} onValueChange={(value) => setSelectedRole(value)}>
-                <SelectTrigger className="h-11">
+                <SelectTrigger className="h-10 text-xs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="user">
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-muted-foreground" />
+                    <div className="flex items-center gap-2 text-xs">
+                      <User className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                       <span>User / Student - Standard access</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="moderator">
-                    <div className="flex items-center gap-2">
-                      <ShieldCheck className="w-4 h-4 text-blue-500" />
+                    <div className="flex items-center gap-2 text-xs">
+                      <ShieldCheck className="w-3.5 h-3.5 text-blue-500 shrink-0" />
                       <span>Moderator - Content management</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="admin">
-                    <div className="flex items-center gap-2">
-                      <Crown className="w-4 h-4 text-amber-500" />
+                    <div className="flex items-center gap-2 text-xs">
+                      <Crown className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                       <span>Admin - Full administrative access</span>
                     </div>
                   </SelectItem>
@@ -581,20 +586,20 @@ const AdminUsers = () => {
             </div>
 
             {selectedRole === 'admin' && (
-              <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-start gap-2 text-xs text-amber-700 dark:text-amber-300">
-                <AlertTriangle className="w-4 h-4 shrink-0 text-amber-500 mt-0.5" />
+              <div className="p-2.5 sm:p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-start gap-2 text-[11px] sm:text-xs text-amber-700 dark:text-amber-300">
+                <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-amber-500 mt-0.5" />
                 <span>
-                  <strong>Caution:</strong> Admin users have full control over the platform, including courses, test results, and all content.
+                  <strong>Caution:</strong> Admin users have full control over the platform.
                 </span>
               </div>
             )}
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={() => setIsRoleDialogOpen(false)}>
+            <Button variant="outline" size="sm" onClick={() => setIsRoleDialogOpen(false)} className="text-xs h-8">
               Cancel
             </Button>
-            <Button variant="default" onClick={handleAssignRole} disabled={assignRole.isPending}>
+            <Button variant="default" size="sm" onClick={handleAssignRole} disabled={assignRole.isPending} className="text-xs h-8">
               {assignRole.isPending ? 'Assigning...' : 'Save Role'}
             </Button>
           </div>
@@ -603,40 +608,41 @@ const AdminUsers = () => {
 
       {/* 2. Delete User Confirmation Dialog */}
       <Dialog open={!!userToDelete} onOpenChange={(open) => !open && setUserToDelete(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="w-[94vw] max-w-md p-4 sm:p-6 rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-destructive">
-              <AlertTriangle className="w-5 h-5 text-destructive" />
+            <DialogTitle className="flex items-center gap-2 text-destructive text-base sm:text-lg">
+              <AlertTriangle className="w-5 h-5 text-destructive shrink-0" />
               Delete User Account?
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-xs">
               This action is permanent and cannot be undone.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="py-3">
-            <div className="p-3.5 rounded-xl bg-destructive/10 border border-destructive/20 space-y-2 text-sm text-card-foreground">
+          <div className="py-2.5">
+            <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 space-y-1.5 text-xs text-card-foreground">
               <p>
-                Are you sure you want to permanently delete user <strong className="text-destructive">{userToDelete?.username || userToDelete?.id}</strong>?
+                Are you sure you want to delete user <strong className="text-destructive break-all">{userToDelete?.username || userToDelete?.id}</strong>?
               </p>
-              <ul className="text-xs text-muted-foreground list-disc list-inside space-y-1">
-                <li>All profile data, XP, and streak records will be removed</li>
-                <li>Purchased courses, notes, and test records will be deleted</li>
-                <li>The user will no longer be able to sign in</li>
+              <ul className="text-[11px] text-muted-foreground list-disc list-inside space-y-0.5">
+                <li>Profile, XP, and streak records will be removed</li>
+                <li>Purchased courses, notes, and test records deleted</li>
               </ul>
             </div>
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setUserToDelete(null)}>
+            <Button variant="outline" size="sm" onClick={() => setUserToDelete(null)} className="text-xs h-8">
               Cancel
             </Button>
             <Button 
               variant="destructive" 
+              size="sm"
               onClick={handleConfirmDelete} 
               disabled={deleteUser.isPending}
+              className="text-xs h-8"
             >
-              {deleteUser.isPending ? 'Deleting...' : 'Delete User Permanently'}
+              {deleteUser.isPending ? 'Deleting...' : 'Delete Permanently'}
             </Button>
           </div>
         </DialogContent>
@@ -644,31 +650,31 @@ const AdminUsers = () => {
 
       {/* 3. Block / Unblock User Confirmation Dialog */}
       <Dialog open={!!userToToggleBlock} onOpenChange={(open) => !open && setUserToToggleBlock(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="w-[94vw] max-w-md p-4 sm:p-6 rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
               {userToToggleBlock?.is_blocked ? (
                 <>
-                  <UserCheck className="w-5 h-5 text-emerald-500" />
-                  Unblock User Account
+                  <UserCheck className="w-5 h-5 text-emerald-500 shrink-0" />
+                  Unblock User
                 </>
               ) : (
                 <>
-                  <Ban className="w-5 h-5 text-amber-500" />
-                  Block User Account
+                  <Ban className="w-5 h-5 text-amber-500 shrink-0" />
+                  Block User
                 </>
               )}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-xs">
               {userToToggleBlock?.is_blocked 
-                ? 'Restore full platform access for this user.'
-                : 'Restrict this user from accessing courses, notes, tests, and their account.'
+                ? 'Restore platform access for this user.'
+                : 'Restrict this user from accessing platform features.'
               }
             </DialogDescription>
           </DialogHeader>
 
-          <div className="py-3">
-            <div className={`p-3.5 rounded-xl border space-y-2 text-sm ${
+          <div className="py-2.5">
+            <div className={`p-3 rounded-xl border space-y-1 text-xs ${
               userToToggleBlock?.is_blocked 
                 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-800 dark:text-emerald-300' 
                 : 'bg-amber-500/10 border-amber-500/20 text-amber-800 dark:text-amber-300'
@@ -676,11 +682,11 @@ const AdminUsers = () => {
               <p>
                 {userToToggleBlock?.is_blocked ? (
                   <>
-                    Are you sure you want to <strong>unblock</strong> <strong>{userToToggleBlock?.username || 'this user'}</strong>? They will be allowed to log in and access their materials normally.
+                    Are you sure you want to <strong>unblock</strong> <strong>{userToToggleBlock?.username || 'this user'}</strong>? They will be allowed to log in and study normally.
                   </>
                 ) : (
                   <>
-                    Are you sure you want to <strong>block</strong> <strong>{userToToggleBlock?.username || 'this user'}</strong>? They will be instantly logged out and prohibited from logging in until unblocked.
+                    Are you sure you want to <strong>block</strong> <strong>{userToToggleBlock?.username || 'this user'}</strong>? They will be signed out and cannot sign in until unblocked.
                   </>
                 )}
               </p>
@@ -688,13 +694,15 @@ const AdminUsers = () => {
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setUserToToggleBlock(null)}>
+            <Button variant="outline" size="sm" onClick={() => setUserToToggleBlock(null)} className="text-xs h-8">
               Cancel
             </Button>
             <Button 
               variant={userToToggleBlock?.is_blocked ? "default" : "destructive"}
+              size="sm"
               onClick={handleConfirmToggleBlock} 
               disabled={toggleBlockUser.isPending}
+              className="text-xs h-8"
             >
               {toggleBlockUser.isPending ? 'Processing...' : userToToggleBlock?.is_blocked ? 'Confirm Unblock' : 'Confirm Block'}
             </Button>
