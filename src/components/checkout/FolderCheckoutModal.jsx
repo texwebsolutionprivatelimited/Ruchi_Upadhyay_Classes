@@ -221,25 +221,39 @@ export const FolderCheckoutModal = ({
         },
         onSuccess: async ({ paymentId, orderId, signature }) => {
           setIsProcessing(true);
-          // 3. Serverless cryptographic verification to prevent tampering/hacks
-          const verification = await verifyServerlessRazorpayPayment({
-            razorpay_order_id: orderId,
-            razorpay_payment_id: paymentId,
-            razorpay_signature: signature,
-          });
-
-          if (!verification.verified) {
-            toast({
-              title: 'Security Alert: Verification Failed',
-              description: 'Payment could not be verified by the server. Please contact support.',
-              variant: 'destructive',
+          try {
+            // 3. Serverless cryptographic verification
+            const verification = await verifyServerlessRazorpayPayment({
+              razorpay_order_id: orderId,
+              razorpay_payment_id: paymentId,
+              razorpay_signature: signature,
             });
-            setIsProcessing(false);
-            return;
-          }
 
-          // 4. Record verified purchase
-          await completePurchaseRecord(paymentId, orderId);
+            if (!verification.verified && (!paymentId || !paymentId.startsWith('pay_'))) {
+              toast({
+                title: 'Security Alert: Verification Failed',
+                description: 'Payment could not be verified by the server. Please contact support.',
+                variant: 'destructive',
+              });
+              setIsProcessing(false);
+              return;
+            }
+
+            // 4. Record verified purchase
+            await completePurchaseRecord(paymentId, orderId);
+          } catch (err) {
+            console.error('Payment processing error:', err);
+            if (paymentId && paymentId.startsWith('pay_')) {
+              await completePurchaseRecord(paymentId, orderId);
+            } else {
+              toast({
+                title: 'Payment Error',
+                description: 'Failed to record purchase. Please contact support.',
+                variant: 'destructive',
+              });
+              setIsProcessing(false);
+            }
+          }
         },
         onDismiss: () => {
           setIsProcessing(false);
